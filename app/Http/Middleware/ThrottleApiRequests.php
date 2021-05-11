@@ -14,4 +14,5 @@ class ThrottleApiRequests extends Middleware
     {
         return (int) config('api.requests_per_minute');
     }
+
 }

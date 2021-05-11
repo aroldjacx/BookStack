@@ -40,7 +40,7 @@ class Page extends BookChild
      */
     public function scopeVisible(Builder $query): Builder
     {
-        $query = Permissions::enforceDraftVisibilityOnQuery($query);
+        $query = Permissions::enforceDraftVisiblityOnQuery($query);
         return parent::scopeVisible($query);
     }
 

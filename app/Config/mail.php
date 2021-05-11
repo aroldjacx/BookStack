@@ -11,7 +11,7 @@
 return [
 
     // Mail driver to use.
-    // Options: smtp, sendmail, log, array
+    // Options: smtp, mail, sendmail, log
     'driver' => env('MAIL_DRIVER', 'smtp'),
 
     // SMTP host address

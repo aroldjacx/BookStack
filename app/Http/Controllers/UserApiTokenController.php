@@ -140,4 +140,5 @@ class UserApiTokenController extends Controller
         $token = ApiToken::query()->where('user_id', '=', $user->id)->where('id', '=', $tokenId)->firstOrFail();
         return [$user, $token];
     }
+
 }

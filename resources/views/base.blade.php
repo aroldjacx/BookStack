@@ -13,6 +13,7 @@
 
     <!-- Styles and Fonts -->
     <link rel="stylesheet" href="{{ versioned_asset('dist/styles.css') }}">
+    <link rel="stylesheet" href="{{ versioned_asset('dist/custom.css') }}">
     <link rel="stylesheet" media="print" href="{{ versioned_asset('dist/print-styles.css') }}">
 
     @yield('head')
@@ -34,8 +35,6 @@
     <div id="content" class="block">
         @yield('content')
     </div>
-
-    @include('common.footer')
 
     <div back-to-top class="primary-background print-hidden">
         <div class="inner">

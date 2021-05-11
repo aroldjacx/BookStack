@@ -77,9 +77,4 @@ return [
     // Email Content
     'email_action_help' => 'إذا واجهتكم مشكلة بضغط زر ":actionText" فبإمكانكم نسخ الرابط أدناه ولصقه بالمتصفح:',
     'email_rights' => 'جميع الحقوق محفوظة',
-
-    // Footer Link Options
-    // Not directly used but available for convenience to users.
-    'privacy_policy' => 'Privacy Policy',
-    'terms_of_service' => 'Terms of Service',
 ];

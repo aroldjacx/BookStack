@@ -2,17 +2,16 @@
 
 namespace BookStack\Http\Controllers\Auth;
 
-use BookStack\Actions\ActivityType;
 use BookStack\Auth\Access\RegistrationService;
 use BookStack\Auth\Access\SocialAuthService;
 use BookStack\Exceptions\SocialDriverNotConfigured;
 use BookStack\Exceptions\SocialSignInAccountNotUsed;
 use BookStack\Exceptions\SocialSignInException;
 use BookStack\Exceptions\UserRegistrationException;
-use BookStack\Facades\Theme;
 use BookStack\Http\Controllers\Controller;
-use BookStack\Theming\ThemeEvents;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Contracts\User as SocialUser;
 
@@ -32,11 +31,12 @@ class SocialController extends Controller
         $this->registrationService = $registrationService;
     }
 
+
     /**
      * Redirect to the relevant social site.
-     * @throws SocialDriverNotConfigured
+     * @throws \BookStack\Exceptions\SocialDriverNotConfigured
      */
-    public function login(string $socialDriver)
+    public function getSocialLogin(string $socialDriver)
     {
         session()->put('social-callback', 'login');
         return $this->socialAuthService->startLogIn($socialDriver);
@@ -47,7 +47,7 @@ class SocialController extends Controller
      * @throws SocialDriverNotConfigured
      * @throws UserRegistrationException
      */
-    public function register(string $socialDriver)
+    public function socialRegister(string $socialDriver)
     {
         $this->registrationService->ensureRegistrationAllowed();
         session()->put('social-callback', 'register');
@@ -60,7 +60,7 @@ class SocialController extends Controller
      * @throws SocialDriverNotConfigured
      * @throws UserRegistrationException
      */
-    public function callback(Request $request, string $socialDriver)
+    public function socialCallback(Request $request, string $socialDriver)
     {
         if (!session()->has('social-callback')) {
             throw new SocialSignInException(trans('errors.social_no_action_defined'), '/login');
@@ -99,7 +99,7 @@ class SocialController extends Controller
     /**
      * Detach a social account from a user.
      */
-    public function detach(string $socialDriver)
+    public function detachSocialAccount(string $socialDriver)
     {
         $this->socialAuthService->detachSocialAccount($socialDriver);
         session()->flash('success', trans('settings.users_social_disconnected', ['socialAccount' => Str::title($socialDriver)]));
@@ -113,7 +113,7 @@ class SocialController extends Controller
     protected function socialRegisterCallback(string $socialDriver, SocialUser $socialUser)
     {
         $socialUser = $this->socialAuthService->handleRegistrationCallback($socialDriver, $socialUser);
-        $socialAccount = $this->socialAuthService->newSocialAccount($socialDriver, $socialUser);
+        $socialAccount = $this->socialAuthService->fillSocialAccount($socialDriver, $socialUser);
         $emailVerified = $this->socialAuthService->driverAutoConfirmEmailEnabled($socialDriver);
 
         // Create an array of the user data to create a new user instance
@@ -130,8 +130,6 @@ class SocialController extends Controller
 
         $user = $this->registrationService->registerUser($userData, $socialAccount, $emailVerified);
         auth()->login($user);
-        Theme::dispatch(ThemeEvents::AUTH_LOGIN, $socialDriver, $user);
-        $this->logActivity(ActivityType::AUTH_LOGIN, $user);
 
         $this->showSuccessNotification(trans('auth.register_success'));
         return redirect('/');

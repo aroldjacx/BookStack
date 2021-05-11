@@ -30,7 +30,7 @@ class BookController extends Controller
      */
     public function index()
     {
-        $view = setting()->getForCurrentUser('books_view_type');
+        $view = setting()->getForCurrentUser('books_view_type', config('app.views.books'));
         $sort = setting()->getForCurrentUser('books_sort', 'name');
         $order = setting()->getForCurrentUser('books_sort_order', 'asc');
 

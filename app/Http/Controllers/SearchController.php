@@ -1,6 +1,9 @@
 <?php namespace BookStack\Http\Controllers;
 
 use BookStack\Actions\ViewService;
+use BookStack\Entities\Models\Book;
+use BookStack\Entities\Models\Bookshelf;
+use BookStack\Entities\Models\Entity;
 use BookStack\Entities\Tools\SearchRunner;
 use BookStack\Entities\Tools\ShelfContext;
 use BookStack\Entities\Tools\SearchOptions;

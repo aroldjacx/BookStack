@@ -6,9 +6,10 @@ use Illuminate\Http\UploadedFile;
 trait UsesImages
 {
     /**
-     * Get the path to a file in the test-data-directory.
+     * Get the path to our basic test image.
+     * @return string
      */
-    protected function getTestImageFilePath(?string $fileName = null): string
+    protected function getTestImageFilePath(?string $fileName = null)
     {
         if (is_null($fileName)) {
             $fileName = 'test-image.png';
@@ -18,26 +19,13 @@ trait UsesImages
     }
 
     /**
-     * Creates a new temporary image file using the given name,
-     * with the content decoded from the given bas64 file name.
-     * Is generally used for testing sketchy files that could trip AV.
-     */
-    protected function newTestImageFromBase64(string $base64FileName, $imageFileName): UploadedFile
-    {
-        $imagePath = implode(DIRECTORY_SEPARATOR, [sys_get_temp_dir(), $imageFileName]);
-        $base64FilePath = $this->getTestImageFilePath($base64FileName);
-        $data = file_get_contents($base64FilePath);
-        $decoded = base64_decode($data);
-        file_put_contents($imagePath, $decoded);
-        return new UploadedFile($imagePath, $imageFileName, 'image/png', null, true);
-    }
-
-    /**
      * Get a test image that can be uploaded
+     * @param $fileName
+     * @return UploadedFile
      */
-    protected function getTestImage(string $fileName, ?string $testDataFileName = null): UploadedFile
+    protected function getTestImage($fileName, ?string $testDataFileName = null)
     {
-        return new UploadedFile($this->getTestImageFilePath($testDataFileName), $fileName, 'image/png', null, true);
+        return new UploadedFile($this->getTestImageFilePath($testDataFileName), $fileName, 'image/png', 5238, null, true);
     }
 
     /**
@@ -100,8 +88,9 @@ trait UsesImages
 
     /**
      * Delete an uploaded image.
+     * @param $relPath
      */
-    protected function deleteImage(string $relPath)
+    protected function deleteImage($relPath)
     {
         $path = public_path($relPath);
         if (file_exists($path)) {

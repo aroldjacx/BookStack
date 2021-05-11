@@ -1,0 +1,25 @@
+
+
+Home page - left:
+G:\apps\bookstack\themes\propeller\views\common\
+home-sidebar.blade.php
+home-shelves.blade.php
+
+
+Body
+G:\apps\bookstack\themes\propeller\views\shelves\
+list.blade.php = grid half
+
+
+
+http://bookstack.localhost/books/personal
+http://bookstack.localhost/books/personal/page/leave-of-absence
+
+
+
+creat books
+http://bookstack.localhost/books
+
+
+create pages
+http://bookstack.localhost/pages

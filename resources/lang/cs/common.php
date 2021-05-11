@@ -77,9 +77,4 @@ return [
     // Email Content
     'email_action_help' => 'Pokud se vám nedaří kliknout na tlačítko „:actionText“, zkopírujte a vložte níže uvedenou URL do vašeho webového prohlížeče:',
     'email_rights' => 'Všechna práva vyhrazena',
-
-    // Footer Link Options
-    // Not directly used but available for convenience to users.
-    'privacy_policy' => 'Privacy Policy',
-    'terms_of_service' => 'Terms of Service',
 ];

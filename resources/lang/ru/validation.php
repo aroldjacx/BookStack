@@ -78,6 +78,7 @@ return [
         'string'  => ':attribute должен быть минимум :min символов.',
         'array'   => ':attribute должен содержать хотя бы :min элементов.',
     ],
+    'no_double_extension'  => ':attribute должен иметь только одно расширение файла.',
     'not_in'               => 'Выбранный :attribute некорректен.',
     'not_regex'            => 'Формат :attribute некорректен.',
     'numeric'              => ':attribute должен быть числом.',

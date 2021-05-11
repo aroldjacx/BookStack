@@ -35,6 +35,8 @@
         </div>
         <iframe src="about:blank" class="markdown-display" sandbox="allow-same-origin"></iframe>
     </div>
+    <input type="hidden" name="html"/>
+
 </div>
 
 

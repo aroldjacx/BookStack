@@ -1,33 +1,27 @@
 <?php namespace BookStack\Auth\Permissions;
 
+use BookStack\Auth\Permissions;
 use BookStack\Auth\Role;
-use BookStack\Auth\User;
 use BookStack\Entities\Models\Book;
-use BookStack\Entities\Models\BookChild;
-use BookStack\Entities\Models\Bookshelf;
 use BookStack\Entities\Models\Chapter;
 use BookStack\Entities\Models\Entity;
+use BookStack\Entities\EntityProvider;
 use BookStack\Entities\Models\Page;
 use BookStack\Model;
 use BookStack\Traits\HasCreatorAndUpdater;
 use BookStack\Traits\HasOwner;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use Throwable;
+use Illuminate\Support\Collection;
 
 class PermissionService
 {
-    /**
-     * @var ?array
-     */
-    protected $userRoles = null;
 
-    /**
-     * @var ?User
-     */
-    protected $currentUserModel = null;
+    protected $currentAction;
+    protected $isAdminUser;
+    protected $userRoles = false;
+    protected $currentUserModel = false;
 
     /**
      * @var Connection
@@ -35,20 +29,47 @@ class PermissionService
     protected $db;
 
     /**
-     * @var array
+     * @var JointPermission
      */
+    protected $jointPermission;
+
+    /**
+     * @var Role
+     */
+    protected $role;
+
+    /**
+     * @var EntityPermission
+     */
+    protected $entityPermission;
+
+    /**
+     * @var EntityProvider
+     */
+    protected $entityProvider;
+
     protected $entityCache;
 
     /**
      * PermissionService constructor.
      */
-    public function __construct(Connection $db)
-    {
+    public function __construct(
+        JointPermission $jointPermission,
+        Permissions\EntityPermission $entityPermission,
+        Role $role,
+        Connection $db,
+        EntityProvider $entityProvider
+    ) {
         $this->db = $db;
+        $this->jointPermission = $jointPermission;
+        $this->entityPermission = $entityPermission;
+        $this->role = $role;
+        $this->entityProvider = $entityProvider;
     }
 
     /**
      * Set the database connection
+     * @param Connection $connection
      */
     public function setConnection(Connection $connection)
     {
@@ -57,31 +78,38 @@ class PermissionService
 
     /**
      * Prepare the local entity cache and ensure it's empty
-     * @param Entity[] $entities
+     * @param \BookStack\Entities\Models\Entity[] $entities
      */
-    protected function readyEntityCache(array $entities = [])
+    protected function readyEntityCache($entities = [])
     {
         $this->entityCache = [];
 
         foreach ($entities as $entity) {
-            $class = get_class($entity);
-            if (!isset($this->entityCache[$class])) {
-                $this->entityCache[$class] = collect();
+            $type = $entity->getType();
+            if (!isset($this->entityCache[$type])) {
+                $this->entityCache[$type] = collect();
             }
-            $this->entityCache[$class]->put($entity->id, $entity);
+            $this->entityCache[$type]->put($entity->id, $entity);
         }
     }
 
     /**
      * Get a book via ID, Checks local cache
+     * @param $bookId
+     * @return Book
      */
-    protected function getBook(int $bookId): ?Book
+    protected function getBook($bookId)
     {
-        if (isset($this->entityCache[Book::class]) && $this->entityCache[Book::class]->has($bookId)) {
-            return $this->entityCache[Book::class]->get($bookId);
+        if (isset($this->entityCache['book']) && $this->entityCache['book']->has($bookId)) {
+            return $this->entityCache['book']->get($bookId);
         }
 
-        return Book::query()->withTrashed()->find($bookId);
+        $book = $this->entityProvider->book->find($bookId);
+        if ($book === null) {
+            $book = false;
+        }
+
+        return $book;
     }
 
     /**
@@ -89,31 +117,37 @@ class PermissionService
      */
     protected function getChapter(int $chapterId): ?Chapter
     {
-        if (isset($this->entityCache[Chapter::class]) && $this->entityCache[Chapter::class]->has($chapterId)) {
-            return $this->entityCache[Chapter::class]->get($chapterId);
+        if (isset($this->entityCache['chapter']) && $this->entityCache['chapter']->has($chapterId)) {
+            return $this->entityCache['chapter']->get($chapterId);
         }
 
-        return Chapter::query()
+        return $this->entityProvider->chapter->newQuery()
             ->withTrashed()
             ->find($chapterId);
     }
 
     /**
-     * Get the roles for the current logged in user.
+     * Get the roles for the current user;
+     * @return array|bool
      */
-    protected function getCurrentUserRoles(): array
+    protected function getRoles()
     {
-        if (!is_null($this->userRoles)) {
+        if ($this->userRoles !== false) {
             return $this->userRoles;
         }
 
+        $roles = [];
+
         if (auth()->guest()) {
-            $this->userRoles = [Role::getSystemRole('public')->id];
-        } else {
-            $this->userRoles = $this->currentUser()->roles->pluck('id')->values()->all();
+            $roles[] = $this->role->getSystemRole('public')->id;
+            return $roles;
         }
 
-        return $this->userRoles;
+
+        foreach ($this->currentUser()->roles as $role) {
+            $roles[] = $role->id;
+        }
+        return $roles;
     }
 
     /**
@@ -121,57 +155,59 @@ class PermissionService
      */
     public function buildJointPermissions()
     {
-        JointPermission::query()->truncate();
+        $this->jointPermission->truncate();
         $this->readyEntityCache();
 
         // Get all roles (Should be the most limited dimension)
-        $roles = Role::query()->with('permissions')->get()->all();
+        $roles = $this->role->with('permissions')->get()->all();
 
         // Chunk through all books
-        $this->bookFetchQuery()->chunk(5, function (EloquentCollection $books) use ($roles) {
+        $this->bookFetchQuery()->chunk(5, function ($books) use ($roles) {
             $this->buildJointPermissionsForBooks($books, $roles);
         });
 
         // Chunk through all bookshelves
-        Bookshelf::query()->withTrashed()->select(['id', 'restricted', 'owned_by'])
-            ->chunk(50, function (EloquentCollection $shelves) use ($roles) {
+        $this->entityProvider->bookshelf->newQuery()->withTrashed()->select(['id', 'restricted', 'owned_by'])
+            ->chunk(50, function ($shelves) use ($roles) {
                 $this->buildJointPermissionsForShelves($shelves, $roles);
             });
     }
 
     /**
      * Get a query for fetching a book with it's children.
+     * @return QueryBuilder
      */
-    protected function bookFetchQuery(): Builder
+    protected function bookFetchQuery()
     {
-        return Book::query()->withTrashed()
-            ->select(['id', 'restricted', 'owned_by'])->with([
-                'chapters' => function ($query) {
-                    $query->withTrashed()->select(['id', 'restricted', 'owned_by', 'book_id']);
-                },
-                'pages' => function ($query) {
-                    $query->withTrashed()->select(['id', 'restricted', 'owned_by', 'book_id', 'chapter_id']);
-                }
-            ]);
+        return $this->entityProvider->book->withTrashed()->newQuery()
+            ->select(['id', 'restricted', 'owned_by'])->with(['chapters' => function ($query) {
+                $query->withTrashed()->select(['id', 'restricted', 'owned_by', 'book_id']);
+            }, 'pages'  => function ($query) {
+                $query->withTrashed()->select(['id', 'restricted', 'owned_by', 'book_id', 'chapter_id']);
+            }]);
     }
 
     /**
-     * Build joint permissions for the given shelf and role combinations.
-     * @throws Throwable
+     * @param Collection $shelves
+     * @param array $roles
+     * @param bool $deleteOld
+     * @throws \Throwable
      */
-    protected function buildJointPermissionsForShelves(EloquentCollection $shelves, array $roles, bool $deleteOld = false)
+    protected function buildJointPermissionsForShelves($shelves, $roles, $deleteOld = false)
     {
         if ($deleteOld) {
             $this->deleteManyJointPermissionsForEntities($shelves->all());
         }
-        $this->createManyJointPermissions($shelves->all(), $roles);
+        $this->createManyJointPermissions($shelves, $roles);
     }
 
     /**
-     * Build joint permissions for the given book and role combinations.
-     * @throws Throwable
+     * Build joint permissions for an array of books
+     * @param Collection $books
+     * @param array $roles
+     * @param bool $deleteOld
      */
-    protected function buildJointPermissionsForBooks(EloquentCollection $books, array $roles, bool $deleteOld = false)
+    protected function buildJointPermissionsForBooks($books, $roles, $deleteOld = false)
     {
         $entities = clone $books;
 
@@ -188,53 +224,55 @@ class PermissionService
         if ($deleteOld) {
             $this->deleteManyJointPermissionsForEntities($entities->all());
         }
-        $this->createManyJointPermissions($entities->all(), $roles);
+        $this->createManyJointPermissions($entities, $roles);
     }
 
     /**
      * Rebuild the entity jointPermissions for a particular entity.
-     * @throws Throwable
+     * @param \BookStack\Entities\Models\Entity $entity
+     * @throws \Throwable
      */
     public function buildJointPermissionsForEntity(Entity $entity)
     {
         $entities = [$entity];
-        if ($entity instanceof Book) {
+        if ($entity->isA('book')) {
             $books = $this->bookFetchQuery()->where('id', '=', $entity->id)->get();
-            $this->buildJointPermissionsForBooks($books, Role::query()->get()->all(), true);
+            $this->buildJointPermissionsForBooks($books, $this->role->newQuery()->get(), true);
             return;
         }
 
-        /** @var BookChild $entity */
         if ($entity->book) {
             $entities[] = $entity->book;
         }
 
-        if ($entity instanceof Page && $entity->chapter_id) {
+        if ($entity->isA('page') && $entity->chapter_id) {
             $entities[] = $entity->chapter;
         }
 
-        if ($entity instanceof Chapter) {
+        if ($entity->isA('chapter')) {
             foreach ($entity->pages as $page) {
                 $entities[] = $page;
             }
         }
 
-        $this->buildJointPermissionsForEntities($entities);
+        $this->buildJointPermissionsForEntities(collect($entities));
     }
 
     /**
      * Rebuild the entity jointPermissions for a collection of entities.
-     * @throws Throwable
+     * @param Collection $entities
+     * @throws \Throwable
      */
-    public function buildJointPermissionsForEntities(array $entities)
+    public function buildJointPermissionsForEntities(Collection $entities)
     {
-        $roles = Role::query()->get()->values()->all();
-        $this->deleteManyJointPermissionsForEntities($entities);
+        $roles = $this->role->newQuery()->get();
+        $this->deleteManyJointPermissionsForEntities($entities->all());
         $this->createManyJointPermissions($entities, $roles);
     }
 
     /**
      * Build the entity jointPermissions for a particular role.
+     * @param Role $role
      */
     public function buildJointPermissionForRole(Role $role)
     {
@@ -247,7 +285,7 @@ class PermissionService
         });
 
         // Chunk through all bookshelves
-        Bookshelf::query()->select(['id', 'restricted', 'owned_by'])
+        $this->entityProvider->bookshelf->newQuery()->select(['id', 'restricted', 'owned_by'])
             ->chunk(50, function ($shelves) use ($roles) {
                 $this->buildJointPermissionsForShelves($shelves, $roles);
             });
@@ -255,6 +293,7 @@ class PermissionService
 
     /**
      * Delete the entity jointPermissions attached to a particular role.
+     * @param Role $role
      */
     public function deleteJointPermissionsForRole(Role $role)
     {
@@ -270,13 +309,13 @@ class PermissionService
         $roleIds = array_map(function ($role) {
             return $role->id;
         }, $roles);
-        JointPermission::query()->whereIn('role_id', $roleIds)->delete();
+        $this->jointPermission->newQuery()->whereIn('role_id', $roleIds)->delete();
     }
 
     /**
      * Delete the entity jointPermissions for a particular entity.
      * @param Entity $entity
-     * @throws Throwable
+     * @throws \Throwable
      */
     public function deleteJointPermissionsForEntity(Entity $entity)
     {
@@ -285,10 +324,10 @@ class PermissionService
 
     /**
      * Delete all of the entity jointPermissions for a list of entities.
-     * @param Entity[] $entities
-     * @throws Throwable
+     * @param \BookStack\Entities\Models\Entity[] $entities
+     * @throws \Throwable
      */
-    protected function deleteManyJointPermissionsForEntities(array $entities)
+    protected function deleteManyJointPermissionsForEntities($entities)
     {
         if (count($entities) === 0) {
             return;
@@ -310,19 +349,19 @@ class PermissionService
     }
 
     /**
-     * Create & Save entity jointPermissions for many entities and roles.
-     * @param Entity[] $entities
-     * @param Role[] $roles
-     * @throws Throwable
+     * Create & Save entity jointPermissions for many entities and jointPermissions.
+     * @param Collection $entities
+     * @param array $roles
+     * @throws \Throwable
      */
-    protected function createManyJointPermissions(array $entities, array $roles)
+    protected function createManyJointPermissions($entities, $roles)
     {
         $this->readyEntityCache($entities);
         $jointPermissions = [];
 
         // Fetch Entity Permissions and create a mapping of entity restricted statuses
         $entityRestrictedMap = [];
-        $permissionFetch = EntityPermission::query();
+        $permissionFetch = $this->entityPermission->newQuery();
         foreach ($entities as $entity) {
             $entityRestrictedMap[$entity->getMorphClass() . ':' . $entity->id] = boolval($entity->getRawAttribute('restricted'));
             $permissionFetch->orWhere(function ($query) use ($entity) {
@@ -366,14 +405,16 @@ class PermissionService
 
     /**
      * Get the actions related to an entity.
+     * @param \BookStack\Entities\Models\Entity $entity
+     * @return array
      */
-    protected function getActions(Entity $entity): array
+    protected function getActions(Entity $entity)
     {
         $baseActions = ['view', 'update', 'delete'];
-        if ($entity instanceof Chapter || $entity instanceof Book) {
+        if ($entity->isA('chapter') || $entity->isA('book')) {
             $baseActions[] = 'page-create';
         }
-        if ($entity instanceof Book) {
+        if ($entity->isA('book')) {
             $baseActions[] = 'chapter-create';
         }
         return $baseActions;
@@ -382,8 +423,14 @@ class PermissionService
     /**
      * Create entity permission data for an entity and role
      * for a particular action.
+     * @param Entity $entity
+     * @param Role $role
+     * @param string $action
+     * @param array $permissionMap
+     * @param array $rolePermissionMap
+     * @return array
      */
-    protected function createJointPermissionData(Entity $entity, Role $role, string $action, array $permissionMap, array $rolePermissionMap): array
+    protected function createJointPermissionData(Entity $entity, Role $role, $action, $permissionMap, $rolePermissionMap)
     {
         $permissionPrefix = (strpos($action, '-') === false ? ($entity->getType() . '-') : '') . $action;
         $roleHasPermission = isset($rolePermissionMap[$role->getRawAttribute('id') . ':' . $permissionPrefix . '-all']);
@@ -400,7 +447,7 @@ class PermissionService
             return $this->createJointPermissionDataArray($entity, $role, $action, $hasAccess, $hasAccess);
         }
 
-        if ($entity instanceof Book || $entity instanceof Bookshelf) {
+        if ($entity->isA('book') || $entity->isA('bookshelf')) {
             return $this->createJointPermissionDataArray($entity, $role, $action, $roleHasPermission, $roleHasPermissionOwn);
         }
 
@@ -429,27 +476,38 @@ class PermissionService
 
     /**
      * Check for an active restriction in an entity map.
+     * @param $entityMap
+     * @param Entity $entity
+     * @param Role $role
+     * @param $action
+     * @return bool
      */
-    protected function mapHasActiveRestriction(array $entityMap, Entity $entity, Role $role, string $action): bool
+    protected function mapHasActiveRestriction($entityMap, Entity $entity, Role $role, $action)
     {
         $key = $entity->getMorphClass() . ':' . $entity->getRawAttribute('id') . ':' . $role->getRawAttribute('id') . ':' . $action;
-        return $entityMap[$key] ?? false;
+        return isset($entityMap[$key]) ? $entityMap[$key] : false;
     }
 
     /**
      * Create an array of data with the information of an entity jointPermissions.
      * Used to build data for bulk insertion.
+     * @param \BookStack\Entities\Models\Entity $entity
+     * @param Role $role
+     * @param $action
+     * @param $permissionAll
+     * @param $permissionOwn
+     * @return array
      */
-    protected function createJointPermissionDataArray(Entity $entity, Role $role, string $action, bool $permissionAll, bool $permissionOwn): array
+    protected function createJointPermissionDataArray(Entity $entity, Role $role, $action, $permissionAll, $permissionOwn)
     {
         return [
-            'role_id' => $role->getRawAttribute('id'),
-            'entity_id' => $entity->getRawAttribute('id'),
-            'entity_type' => $entity->getMorphClass(),
-            'action' => $action,
-            'has_permission' => $permissionAll,
+            'role_id'            => $role->getRawAttribute('id'),
+            'entity_id'          => $entity->getRawAttribute('id'),
+            'entity_type'        => $entity->getMorphClass(),
+            'action'             => $action,
+            'has_permission'     => $permissionAll,
             'has_permission_own' => $permissionOwn,
-            'owned_by' => $entity->getRawAttribute('owned_by'),
+            'owned_by'         => $entity->getRawAttribute('owned_by')
         ];
     }
 
@@ -463,47 +521,55 @@ class PermissionService
 
         $baseQuery = $ownable->newQuery()->where('id', '=', $ownable->id);
         $action = end($explodedPermission);
-        $user = $this->currentUser();
+        $this->currentAction = $action;
 
         $nonJointPermissions = ['restrictions', 'image', 'attachment', 'comment'];
 
         // Handle non entity specific jointPermissions
         if (in_array($explodedPermission[0], $nonJointPermissions)) {
-            $allPermission = $user && $user->can($permission . '-all');
-            $ownPermission = $user && $user->can($permission . '-own');
+            $allPermission = $this->currentUser() && $this->currentUser()->can($permission . '-all');
+            $ownPermission = $this->currentUser() && $this->currentUser()->can($permission . '-own');
+            $this->currentAction = 'view';
             $ownerField = ($ownable instanceof Entity) ? 'owned_by' : 'created_by';
-            $isOwner = $user && $user->id === $ownable->$ownerField;
+            $isOwner = $this->currentUser() && $this->currentUser()->id === $ownable->$ownerField;
             return ($allPermission || ($isOwner && $ownPermission));
         }
 
         // Handle abnormal create jointPermissions
         if ($action === 'create') {
-            $action = $permission;
+            $this->currentAction = $permission;
         }
 
-        $hasAccess = $this->entityRestrictionQuery($baseQuery, $action)->count() > 0;
+        $q = $this->entityRestrictionQuery($baseQuery)->count() > 0;
         $this->clean();
-        return $hasAccess;
+        return $q;
     }
 
     /**
      * Checks if a user has the given permission for any items in the system.
      * Can be passed an entity instance to filter on a specific type.
+     * @param string $permission
+     * @param string $entityClass
+     * @return bool
      */
-    public function checkUserHasPermissionOnAnything(string $permission, ?string $entityClass = null): bool
+    public function checkUserHasPermissionOnAnything(string $permission, string $entityClass = null)
     {
         $userRoleIds = $this->currentUser()->roles()->select('id')->pluck('id')->toArray();
         $userId = $this->currentUser()->id;
 
-        $permissionQuery = JointPermission::query()
+        $permissionQuery = $this->db->table('joint_permissions')
             ->where('action', '=', $permission)
             ->whereIn('role_id', $userRoleIds)
-            ->where(function (Builder $query) use ($userId) {
-                $this->addJointHasPermissionCheck($query, $userId);
+            ->where(function ($query) use ($userId) {
+                $query->where('has_permission', '=', 1)
+                    ->orWhere(function ($query2) use ($userId) {
+                        $query2->where('has_permission_own', '=', 1)
+                            ->where('owned_by', '=', $userId);
+                    });
             });
 
         if (!is_null($entityClass)) {
-            $entityInstance = app($entityClass);
+            $entityInstance = app()->make($entityClass);
             $permissionQuery = $permissionQuery->where('entity_type', '=', $entityInstance->getMorphClass());
         }
 
@@ -513,21 +579,45 @@ class PermissionService
     }
 
     /**
+     * Check if an entity has restrictions set on itself or its
+     * parent tree.
+     * @param \BookStack\Entities\Models\Entity $entity
+     * @param $action
+     * @return bool|mixed
+     */
+    public function checkIfRestrictionsSet(Entity $entity, $action)
+    {
+        $this->currentAction = $action;
+        if ($entity->isA('page')) {
+            return $entity->restricted || ($entity->chapter && $entity->chapter->restricted) || $entity->book->restricted;
+        } elseif ($entity->isA('chapter')) {
+            return $entity->restricted || $entity->book->restricted;
+        } elseif ($entity->isA('book')) {
+            return $entity->restricted;
+        }
+    }
+
+    /**
      * The general query filter to remove all entities
      * that the current user does not have access to.
+     * @param $query
+     * @return mixed
      */
-    protected function entityRestrictionQuery(Builder $query, string $action): Builder
+    protected function entityRestrictionQuery($query)
     {
-        $q = $query->where(function ($parentQuery) use ($action) {
-            $parentQuery->whereHas('jointPermissions', function ($permissionQuery) use ($action) {
-                $permissionQuery->whereIn('role_id', $this->getCurrentUserRoles())
-                    ->where('action', '=', $action)
-                    ->where(function (Builder $query) {
-                        $this->addJointHasPermissionCheck($query, $this->currentUser()->id);
+        $q = $query->where(function ($parentQuery) {
+            $parentQuery->whereHas('jointPermissions', function ($permissionQuery) {
+                $permissionQuery->whereIn('role_id', $this->getRoles())
+                    ->where('action', '=', $this->currentAction)
+                    ->where(function ($query) {
+                        $query->where('has_permission', '=', true)
+                            ->orWhere(function ($query) {
+                                $query->where('has_permission_own', '=', true)
+                                    ->where('owned_by', '=', $this->currentUser()->id);
+                            });
                     });
             });
         });
-
         $this->clean();
         return $q;
     }
@@ -541,10 +631,14 @@ class PermissionService
         $this->clean();
         return $query->where(function (Builder $parentQuery) use ($ability) {
             $parentQuery->whereHas('jointPermissions', function (Builder $permissionQuery) use ($ability) {
-                $permissionQuery->whereIn('role_id', $this->getCurrentUserRoles())
+                $permissionQuery->whereIn('role_id', $this->getRoles())
                     ->where('action', '=', $ability)
                     ->where(function (Builder $query) {
-                        $this->addJointHasPermissionCheck($query, $this->currentUser()->id);
+                        $query->where('has_permission', '=', true)
+                            ->orWhere(function (Builder $query) {
+                                $query->where('has_permission_own', '=', true)
+                                    ->where('owned_by', '=', $this->currentUser()->id);
+                            });
                     });
             });
         });
@@ -554,7 +648,7 @@ class PermissionService
      * Extend the given page query to ensure draft items are not visible
      * unless created by the given user.
      */
-    public function enforceDraftVisibilityOnQuery(Builder $query): Builder
+    public function enforceDraftVisiblityOnQuery(Builder $query): Builder
     {
         return $query->where(function (Builder $query) {
             $query->where('draft', '=', false)
@@ -566,89 +660,109 @@ class PermissionService
     }
 
     /**
-     * Add restrictions for a generic entity.
+     * Add restrictions for a generic entity
+     * @param string $entityType
+     * @param Builder|\BookStack\Entities\Models\Entity $query
+     * @param string $action
+     * @return Builder
      */
-    public function enforceEntityRestrictions(Entity $entity, Builder $query, string $action = 'view'): Builder
+    public function enforceEntityRestrictions($entityType, $query, $action = 'view')
     {
-        if ($entity instanceof Page) {
+        if (strtolower($entityType) === 'page') {
             // Prevent drafts being visible to others.
-            $this->enforceDraftVisibilityOnQuery($query);
+            $query = $query->where(function ($query) {
+                $query->where('draft', '=', false)
+                    ->orWhere(function ($query) {
+                        $query->where('draft', '=', true)
+                            ->where('owned_by', '=', $this->currentUser()->id);
+                    });
+            });
         }
 
-        return $this->entityRestrictionQuery($query, $action);
+        $this->currentAction = $action;
+        return $this->entityRestrictionQuery($query);
     }
 
     /**
      * Filter items that have entities set as a polymorphic relation.
+     * @param $query
+     * @param string $tableName
+     * @param string $entityIdColumn
+     * @param string $entityTypeColumn
+     * @param string $action
+     * @return QueryBuilder
      */
-    public function filterRestrictedEntityRelations(Builder $query, string $tableName, string $entityIdColumn, string $entityTypeColumn, string $action = 'view'): Builder
+    public function filterRestrictedEntityRelations($query, $tableName, $entityIdColumn, $entityTypeColumn, $action = 'view')
     {
+
+        $this->currentAction = $action;
         $tableDetails = ['tableName' => $tableName, 'entityIdColumn' => $entityIdColumn, 'entityTypeColumn' => $entityTypeColumn];
 
-        $q = $query->where(function ($query) use ($tableDetails, $action) {
-            $query->whereExists(function ($permissionQuery) use (&$tableDetails, $action) {
+        $q = $query->where(function ($query) use ($tableDetails) {
+            $query->whereExists(function ($permissionQuery) use (&$tableDetails) {
                 $permissionQuery->select('id')->from('joint_permissions')
                     ->whereRaw('joint_permissions.entity_id=' . $tableDetails['tableName'] . '.' . $tableDetails['entityIdColumn'])
                     ->whereRaw('joint_permissions.entity_type=' . $tableDetails['tableName'] . '.' . $tableDetails['entityTypeColumn'])
-                    ->where('action', '=', $action)
-                    ->whereIn('role_id', $this->getCurrentUserRoles())
-                    ->where(function (QueryBuilder $query) {
-                        $this->addJointHasPermissionCheck($query, $this->currentUser()->id);
+                    ->where('action', '=', $this->currentAction)
+                    ->whereIn('role_id', $this->getRoles())
+                    ->where(function ($query) {
+                        $query->where('has_permission', '=', true)->orWhere(function ($query) {
+                            $query->where('has_permission_own', '=', true)
+                                ->where('owned_by', '=', $this->currentUser()->id);
+                        });
                     });
             });
         });
-
         $this->clean();
         return $q;
     }
 
     /**
      * Add conditions to a query to filter the selection to related entities
-     * where view permissions are granted.
+     * where permissions are granted.
+     * @param $entityType
+     * @param $query
+     * @param $tableName
+     * @param $entityIdColumn
+     * @return mixed
      */
-    public function filterRelatedEntity(string $entityClass, Builder $query, string $tableName, string $entityIdColumn): Builder
+    public function filterRelatedEntity($entityType, $query, $tableName, $entityIdColumn)
     {
+        $this->currentAction = 'view';
         $tableDetails = ['tableName' => $tableName, 'entityIdColumn' => $entityIdColumn];
-        $morphClass = app($entityClass)->getMorphClass();
 
-        $q = $query->where(function ($query) use ($tableDetails, $morphClass) {
-            $query->where(function ($query) use (&$tableDetails, $morphClass) {
-                $query->whereExists(function ($permissionQuery) use (&$tableDetails, $morphClass) {
+        $pageMorphClass = $this->entityProvider->get($entityType)->getMorphClass();
+
+        $q = $query->where(function ($query) use ($tableDetails, $pageMorphClass) {
+            $query->where(function ($query) use (&$tableDetails, $pageMorphClass) {
+                $query->whereExists(function ($permissionQuery) use (&$tableDetails, $pageMorphClass) {
                     $permissionQuery->select('id')->from('joint_permissions')
                         ->whereRaw('joint_permissions.entity_id=' . $tableDetails['tableName'] . '.' . $tableDetails['entityIdColumn'])
-                        ->where('entity_type', '=', $morphClass)
-                        ->where('action', '=', 'view')
-                        ->whereIn('role_id', $this->getCurrentUserRoles())
-                        ->where(function (QueryBuilder $query) {
-                            $this->addJointHasPermissionCheck($query, $this->currentUser()->id);
+                        ->where('entity_type', '=', $pageMorphClass)
+                        ->where('action', '=', $this->currentAction)
+                        ->whereIn('role_id', $this->getRoles())
+                        ->where(function ($query) {
+                            $query->where('has_permission', '=', true)->orWhere(function ($query) {
+                                $query->where('has_permission_own', '=', true)
+                                    ->where('owned_by', '=', $this->currentUser()->id);
+                            });
                         });
                 });
             })->orWhere($tableDetails['entityIdColumn'], '=', 0);
         });
 
         $this->clean();
+
         return $q;
     }
 
     /**
-     * Add the query for checking the given user id has permission
-     * within the join_permissions table.
-     * @param QueryBuilder|Builder $query
-     */
-    protected function addJointHasPermissionCheck($query, int $userIdToCheck)
-    {
-        $query->where('has_permission', '=', true)->orWhere(function ($query) use ($userIdToCheck) {
-            $query->where('has_permission_own', '=', true)
-                ->where('owned_by', '=', $userIdToCheck);
-        });
-    }
-
-    /**
      * Get the current user
+     * @return \BookStack\Auth\User
      */
-    private function currentUser(): User
+    private function currentUser()
     {
-        if (is_null($this->currentUserModel)) {
+        if ($this->currentUserModel === false) {
             $this->currentUserModel = user();
         }
 
@@ -658,9 +772,10 @@ class PermissionService
     /**
      * Clean the cached user elements.
      */
-    private function clean(): void
+    private function clean()
     {
-        $this->currentUserModel = null;
-        $this->userRoles = null;
+        $this->currentUserModel = false;
+        $this->userRoles = false;
+        $this->isAdminUser = null;
     }
 }

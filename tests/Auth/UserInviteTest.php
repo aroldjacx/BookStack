@@ -18,15 +18,13 @@ class UserInviteTest extends TestCase
         Notification::fake();
         $admin = $this->getAdmin();
 
-        $email = Str::random(16) . '@example.com';
-        $resp = $this->actingAs($admin)->post('/settings/users/create', [
+        $this->actingAs($admin)->post('/settings/users/create', [
             'name' => 'Barry',
-            'email' => $email,
+            'email' => 'tester@example.com',
             'send_invite' => 'true',
         ]);
-        $resp->assertRedirect('/settings/users');
 
-        $newUser = User::query()->where('email', '=', $email)->orderBy('id', 'desc')->first();
+        $newUser = User::query()->where('email', '=', 'tester@example.com')->orderBy('id', 'desc')->first();
 
         Notification::assertSentTo($newUser, UserInvite::class);
         $this->assertDatabaseHas('user_invites', [

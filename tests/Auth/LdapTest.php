@@ -4,7 +4,6 @@ use BookStack\Auth\Access\LdapService;
 use BookStack\Auth\Role;
 use BookStack\Auth\Access\Ldap;
 use BookStack\Auth\User;
-use BookStack\Exceptions\LdapException;
 use Mockery\MockInterface;
 use Tests\BrowserKitTest;
 
@@ -39,14 +38,6 @@ class LdapTest extends BrowserKitTest
         $this->mockLdap = \Mockery::mock(Ldap::class);
         $this->app[Ldap::class] = $this->mockLdap;
         $this->mockUser = factory(User::class)->make();
-    }
-
-    protected function runFailedAuthLogin()
-    {
-        $this->commonLdapMocks(1, 1, 1, 1, 1);
-        $this->mockLdap->shouldReceive('searchAndGetEntries')->times(1)
-            ->andReturn(['count' => 0]);
-        $this->post('/login', ['username' => 'timmyjenkins', 'password' => 'cattreedog']);
     }
 
     protected function mockEscapes($times = 1)
@@ -559,22 +550,6 @@ class LdapTest extends BrowserKitTest
         ]);
     }
 
-    public function test_start_tls_called_if_option_set()
-    {
-        config()->set(['services.ldap.start_tls' => true]);
-        $this->mockLdap->shouldReceive('startTls')->once()->andReturn(true);
-        $this->runFailedAuthLogin();
-    }
-
-    public function test_connection_fails_if_tls_fails()
-    {
-        config()->set(['services.ldap.start_tls' => true]);
-        $this->mockLdap->shouldReceive('startTls')->once()->andReturn(false);
-        $this->commonLdapMocks(1, 1, 0, 0, 0);
-        $this->post('/login', ['username' => 'timmyjenkins', 'password' => 'cattreedog']);
-        $this->assertResponseStatus(500);
-    }
-
     public function test_ldap_attributes_can_be_binary_decoded_if_marked()
     {
         config()->set(['services.ldap.id_attribute' => 'BIN;uid']);
@@ -665,7 +640,12 @@ class LdapTest extends BrowserKitTest
     {
         $log = $this->withTestLogger();
         config()->set(['logging.failed_login.message' => 'Failed login for %u']);
-        $this->runFailedAuthLogin();
+
+        $this->commonLdapMocks(1, 1, 1, 1, 1);
+        $this->mockLdap->shouldReceive('searchAndGetEntries')->times(1)
+            ->andReturn(['count' => 0]);
+
+        $this->post('/login', ['username' => 'timmyjenkins', 'password' => 'cattreedog']);
         $this->assertTrue($log->hasWarningThatContains('Failed login for timmyjenkins'));
     }
 }

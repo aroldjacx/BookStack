@@ -1,6 +1,5 @@
 <?php namespace BookStack\Settings;
 
-use BookStack\Auth\User;
 use Illuminate\Contracts\Cache\Repository as Cache;
 
 /**
@@ -10,6 +9,7 @@ use Illuminate\Contracts\Cache\Repository as Cache;
  */
 class SettingService
 {
+
     protected $setting;
     protected $cache;
     protected $localCache = [];
@@ -18,6 +18,8 @@ class SettingService
 
     /**
      * SettingService constructor.
+     * @param Setting $setting
+     * @param Cache   $cache
      */
     public function __construct(Setting $setting, Cache $cache)
     {
@@ -28,10 +30,13 @@ class SettingService
     /**
      * Gets a setting from the database,
      * If not found, Returns default, Which is false by default.
+     * @param             $key
+     * @param string|bool $default
+     * @return bool|string
      */
-    public function get(string $key, $default = null)
+    public function get($key, $default = false)
     {
-        if (is_null($default)) {
+        if ($default === false) {
             $default = config('setting-defaults.' . $key, false);
         }
 
@@ -39,7 +44,7 @@ class SettingService
             return $this->localCache[$key];
         }
 
-        $value = $this->getValueFromStore($key) ?? $default;
+        $value = $this->getValueFromStore($key, $default);
         $formatted = $this->formatValue($value, $default);
         $this->localCache[$key] = $formatted;
         return $formatted;
@@ -47,22 +52,26 @@ class SettingService
 
     /**
      * Get a value from the session instead of the main store option.
+     * @param $key
+     * @param bool $default
+     * @return mixed
      */
-    protected function getFromSession(string $key, $default = false)
+    protected function getFromSession($key, $default = false)
     {
         $value = session()->get($key, $default);
-        return $this->formatValue($value, $default);
+        $formatted = $this->formatValue($value, $default);
+        return $formatted;
     }
 
     /**
      * Get a user-specific setting from the database or cache.
+     * @param \BookStack\Auth\User $user
+     * @param $key
+     * @param bool $default
+     * @return bool|string
      */
-    public function getUser(User $user, string $key, $default = null)
+    public function getUser($user, $key, $default = false)
     {
-        if (is_null($default)) {
-            $default = config('setting-defaults.user.' . $key, false);
-        }
-
         if ($user->isDefault()) {
             return $this->getFromSession($key, $default);
         }
@@ -71,8 +80,11 @@ class SettingService
 
     /**
      * Get a value for the current logged-in user.
+     * @param $key
+     * @param bool $default
+     * @return bool|string
      */
-    public function getForCurrentUser(string $key, $default = null)
+    public function getForCurrentUser($key, $default = false)
     {
         return $this->getUser(user(), $key, $default);
     }
@@ -80,9 +92,11 @@ class SettingService
     /**
      * Gets a setting value from the cache or database.
      * Looks at the system defaults if not cached or in database.
-     * Returns null if nothing is found.
+     * @param $key
+     * @param $default
+     * @return mixed
      */
-    protected function getValueFromStore(string $key)
+    protected function getValueFromStore($key, $default)
     {
         // Check the cache
         $cacheKey = $this->cachePrefix . $key;
@@ -95,22 +109,18 @@ class SettingService
         $settingObject = $this->getSettingObjectByKey($key);
         if ($settingObject !== null) {
             $value = $settingObject->value;
-
-            if ($settingObject->type === 'array') {
-                $value = json_decode($value, true) ?? [];
-            }
-
             $this->cache->forever($cacheKey, $value);
             return $value;
         }
 
-        return null;
+        return $default;
     }
 
     /**
      * Clear an item from the cache completely.
+     * @param $key
      */
-    protected function clearFromCache(string $key)
+    protected function clearFromCache($key)
     {
         $cacheKey = $this->cachePrefix . $key;
         $this->cache->forget($cacheKey);
@@ -121,13 +131,17 @@ class SettingService
 
     /**
      * Format a settings value
+     * @param $value
+     * @param $default
+     * @return mixed
      */
     protected function formatValue($value, $default)
     {
         // Change string booleans to actual booleans
         if ($value === 'true') {
             $value = true;
-        } else if ($value === 'false') {
+        }
+        if ($value === 'false') {
             $value = false;
         }
 
@@ -140,29 +154,36 @@ class SettingService
 
     /**
      * Checks if a setting exists.
+     * @param $key
+     * @return bool
      */
-    public function has(string $key): bool
+    public function has($key)
     {
         $setting = $this->getSettingObjectByKey($key);
         return $setting !== null;
     }
 
     /**
-     * Add a setting to the database.
-     * Values can be an array or a string.
+     * Check if a user setting is in the database.
+     * @param $key
+     * @return bool
      */
-    public function put(string $key, $value): bool
+    public function hasUser($key)
     {
-        $setting = $this->setting->newQuery()->firstOrNew([
+        return $this->has($this->userKey($key));
+    }
+
+    /**
+     * Add a setting to the database.
+     * @param $key
+     * @param $value
+     * @return bool
+     */
+    public function put($key, $value)
+    {
+        $setting = $this->setting->firstOrNew([
             'setting_key' => $key
         ]);
-        $setting->type = 'string';
-
-        if (is_array($value)) {
-            $setting->type = 'array';
-            $value = $this->formatArrayValue($value);
-        }
-
         $setting->value = $value;
         $setting->save();
         $this->clearFromCache($key);
@@ -170,67 +191,62 @@ class SettingService
     }
 
     /**
-     * Format an array to be stored as a setting.
-     * Array setting types are expected to be a flat array of child key=>value array items.
-     * This filters out any child items that are empty.
-     */
-    protected function formatArrayValue(array $value): string
-    {
-        $values = collect($value)->values()->filter(function (array $item) {
-            return count(array_filter($item)) > 0;
-        });
-        return json_encode($values);
-    }
-
-    /**
      * Put a user-specific setting into the database.
+     * @param \BookStack\Auth\User $user
+     * @param $key
+     * @param $value
+     * @return bool
      */
-    public function putUser(User $user, string $key, string $value): bool
+    public function putUser($user, $key, $value)
     {
         if ($user->isDefault()) {
-            session()->put($key, $value);
-            return true;
+            return session()->put($key, $value);
         }
-
         return $this->put($this->userKey($user->id, $key), $value);
     }
 
     /**
      * Convert a setting key into a user-specific key.
+     * @param $key
+     * @return string
      */
-    protected function userKey(string $userId, string $key = ''): string
+    protected function userKey($userId, $key = '')
     {
         return 'user:' . $userId . ':' . $key;
     }
 
     /**
      * Removes a setting from the database.
+     * @param $key
+     * @return bool
      */
-    public function remove(string $key): void
+    public function remove($key)
     {
         $setting = $this->getSettingObjectByKey($key);
         if ($setting) {
             $setting->delete();
         }
         $this->clearFromCache($key);
+        return true;
     }
 
     /**
      * Delete settings for a given user id.
+     * @param $userId
+     * @return mixed
      */
-    public function deleteUserSettings(string $userId)
+    public function deleteUserSettings($userId)
     {
-        return $this->setting->newQuery()
-            ->where('setting_key', 'like', $this->userKey($userId) . '%')
-            ->delete();
+        return $this->setting->where('setting_key', 'like', $this->userKey($userId) . '%')->delete();
     }
 
     /**
      * Gets a setting model from the database for the given key.
+     * @param $key
+     * @return mixed
      */
-    protected function getSettingObjectByKey(string $key): ?Setting
+    protected function getSettingObjectByKey($key)
     {
-        return $this->setting->newQuery()
-            ->where('setting_key', '=', $key)->first();
+        return $this->setting->where('setting_key', '=', $key)->first();
     }
 }

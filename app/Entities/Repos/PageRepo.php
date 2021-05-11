@@ -190,11 +190,11 @@ class PageRepo
         $this->getUserDraftQuery($page)->delete();
 
         // Save a revision after updating
-        $summary = trim($input['summary'] ?? "");
+        $summary = $input['summary'] ?? null;
         $htmlChanged = isset($input['html']) && $input['html'] !== $oldHtml;
         $nameChanged = isset($input['name']) && $input['name'] !== $oldName;
         $markdownChanged = isset($input['markdown']) && $input['markdown'] !== $oldMarkdown;
-        if ($htmlChanged || $nameChanged || $markdownChanged || $summary) {
+        if ($htmlChanged || $nameChanged || $markdownChanged || $summary !== null) {
             $this->savePageRevision($page, $summary);
         }
 

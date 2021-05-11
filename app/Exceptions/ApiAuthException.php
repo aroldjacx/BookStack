@@ -2,7 +2,6 @@
 
 namespace BookStack\Exceptions;
 
-class ApiAuthException extends UnauthorizedException
-{
+class ApiAuthException extends UnauthorizedException {
 
 }

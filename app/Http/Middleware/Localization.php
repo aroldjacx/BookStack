@@ -18,8 +18,6 @@ class Localization
     protected $localeMap = [
         'ar' => 'ar',
         'bg' => 'bg_BG',
-        'bs' => 'bs_BA',
-        'ca' => 'ca',
         'da' => 'da_DK',
         'de' => 'de_DE',
         'de_informal' => 'de_DE',
@@ -28,15 +26,13 @@ class Localization
         'es_AR' => 'es_AR',
         'fr' => 'fr_FR',
         'he' => 'he_IL',
-        'id' => 'id_ID',
         'it' => 'it_IT',
         'ja' => 'ja',
         'ko' => 'ko_KR',
-        'lv' => 'lv_LV',
         'nl' => 'nl_NL',
         'nb' => 'nb_NO',
         'pl' => 'pl_PL',
-        'pt' => 'pt_PT',
+        'pt' => 'pl_PT',
         'pt_BR' => 'pt_BR',
         'ru' => 'ru',
         'sk' => 'sk_SK',
@@ -61,7 +57,12 @@ class Localization
         $defaultLang = config('app.locale');
         config()->set('app.default_locale', $defaultLang);
 
-        $locale = $this->getUserLocale($request, $defaultLang);
+        if (user()->isDefault() && config('app.auto_detect_locale')) {
+            $locale = $this->autoDetectLocale($request, $defaultLang);
+        } else {
+            $locale = setting()->getUser(user(), 'language', $defaultLang);
+        }
+
         config()->set('app.lang', str_replace('_', '-', $this->getLocaleIso($locale)));
 
         // Set text direction
@@ -76,28 +77,13 @@ class Localization
     }
 
     /**
-     * Get the locale specifically for the currently logged in user if available.
-     */
-    protected function getUserLocale(Request $request, string $default): string
-    {
-        try {
-            $user = user();
-        } catch (\Exception $exception) {
-            return $default;
-        }
-
-        if ($user->isDefault() && config('app.auto_detect_locale')) {
-            return $this->autoDetectLocale($request, $default);
-        }
-
-        return setting()->getUser($user, 'language', $default);
-    }
-
-    /**
      * Autodetect the visitors locale by matching locales in their headers
      * against the locales supported by BookStack.
+     * @param Request $request
+     * @param string $default
+     * @return string
      */
-    protected function autoDetectLocale(Request $request, string $default): string
+    protected function autoDetectLocale(Request $request, string $default)
     {
         $availableLocales = config('app.locales');
         foreach ($request->getLanguages() as $lang) {
@@ -110,8 +96,10 @@ class Localization
 
     /**
      * Get the ISO version of a BookStack language name
+     * @param  string $locale
+     * @return string
      */
-    public function getLocaleIso(string $locale): string
+    public function getLocaleIso(string $locale)
     {
         return $this->localeMap[$locale] ?? $locale;
     }
@@ -119,6 +107,7 @@ class Localization
     /**
      * Set the system date locale for localized date formatting.
      * Will try both the standard locale name and the UTF8 variant.
+     * @param string $locale
      */
     protected function setSystemDateLocale(string $locale)
     {

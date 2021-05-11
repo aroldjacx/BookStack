@@ -3,7 +3,9 @@
 namespace BookStack\Exceptions;
 
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,42 +16,36 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class Handler extends ExceptionHandler
 {
     /**
-     * A list of the exception types that are not reported.
+     * A list of the exception types that should not be reported.
      *
      * @var array
      */
     protected $dontReport = [
+        AuthorizationException::class,
+        HttpException::class,
+        ModelNotFoundException::class,
+        ValidationException::class,
         NotFoundException::class,
     ];
 
     /**
-     * A list of the inputs that are never flashed for validation exceptions.
-     *
-     * @var array
-     */
-    protected $dontFlash = [
-        'password',
-        'password_confirmation',
-    ];
-
-    /**
      * Report or log an exception.
+     * This is a great spot to send exceptions to Sentry, Bugsnag, etc.
      *
-     * @param Exception $exception
-     * @return void
-     *
+     * @param  \Exception $e
+     * @return mixed
      * @throws Exception
      */
-    public function report(Exception $exception)
+    public function report(Exception $e)
     {
-        parent::report($exception);
+        return parent::report($e);
     }
 
     /**
      * Render an exception into an HTTP response.
      *
      * @param  \Illuminate\Http\Request $request
-     * @param Exception $e
+     * @param  \Exception $e
      * @return \Illuminate\Http\Response
      */
     public function render($request, Exception $e)
@@ -121,8 +117,11 @@ class Handler extends ExceptionHandler
 
     /**
      * Check the exception chain to compare against the original exception type.
+     * @param Exception $e
+     * @param $type
+     * @return bool
      */
-    protected function isExceptionType(Exception $e, string $type): bool
+    protected function isExceptionType(Exception $e, $type)
     {
         do {
             if (is_a($e, $type)) {
@@ -134,8 +133,10 @@ class Handler extends ExceptionHandler
 
     /**
      * Get original exception message.
+     * @param Exception $e
+     * @return string
      */
-    protected function getOriginalMessage(Exception $e): string
+    protected function getOriginalMessage(Exception $e)
     {
         do {
             $message = $e->getMessage();

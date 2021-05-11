@@ -105,7 +105,7 @@
         </div>
     </div>
 
-    <div class="actions mb-xl">
+    <div class="actions mb-xl bb2">
         <h5>{{ trans('common.actions') }}</h5>
 
         <div class="icon-list text-primary">

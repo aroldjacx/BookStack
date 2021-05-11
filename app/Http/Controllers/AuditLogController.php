@@ -20,7 +20,6 @@ class AuditLogController extends Controller
             'sort' => $request->get('sort', 'created_at'),
             'date_from' => $request->get('date_from', ''),
             'date_to' => $request->get('date_to', ''),
-            'user' => $request->get('user', ''),
         ];
 
         $query = Activity::query()
@@ -34,9 +33,6 @@ class AuditLogController extends Controller
 
         if ($listDetails['event']) {
             $query->where('type', '=', $listDetails['event']);
-        }
-        if ($listDetails['user']) {
-            $query->where('user_id', '=', $listDetails['user']);
         }
 
         if ($listDetails['date_from']) {

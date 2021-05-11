@@ -1,9 +1,7 @@
 <?php namespace BookStack\Auth;
 
 use BookStack\Api\ApiToken;
-use BookStack\Entities\Tools\SlugGenerator;
 use BookStack\Interfaces\Loggable;
-use BookStack\Interfaces\Sluggable;
 use BookStack\Model;
 use BookStack\Notifications\ResetPassword;
 use BookStack\Uploads\Image;
@@ -24,7 +22,6 @@ use Illuminate\Support\Collection;
  * Class User
  * @property string $id
  * @property string $name
- * @property string $slug
  * @property string $email
  * @property string $password
  * @property Carbon $created_at
@@ -33,9 +30,8 @@ use Illuminate\Support\Collection;
  * @property int $image_id
  * @property string $external_auth_id
  * @property string $system_name
- * @property Collection $roles
  */
-class User extends Model implements AuthenticatableContract, CanResetPasswordContract, Loggable, Sluggable
+class User extends Model implements AuthenticatableContract, CanResetPasswordContract, Loggable
 {
     use Authenticatable, CanResetPassword, Notifiable;
 
@@ -76,21 +72,23 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     /**
      * Returns the default public user.
+     * @return User
      */
-    public static function getDefault(): User
+    public static function getDefault()
     {
         if (!is_null(static::$defaultUser)) {
             return static::$defaultUser;
         }
         
-        static::$defaultUser = static::query()->where('system_name', '=', 'public')->first();
+        static::$defaultUser = static::where('system_name', '=', 'public')->first();
         return static::$defaultUser;
     }
 
     /**
      * Check if the user is the default public user.
+     * @return bool
      */
-    public function isDefault(): bool
+    public function isDefault()
     {
         return $this->system_name === 'public';
     }
@@ -117,10 +115,12 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     /**
      * Check if the user has a role.
+     * @param $role
+     * @return mixed
      */
-    public function hasSystemRole(string $roleSystemName): bool
+    public function hasSystemRole($role)
     {
-        return $this->roles->pluck('system_name')->contains($roleSystemName);
+        return $this->roles->pluck('system_name')->contains($role);
     }
 
     /**
@@ -184,8 +184,9 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     /**
      * Get the social account associated with this user.
+     * @return HasMany
      */
-    public function socialAccounts(): HasMany
+    public function socialAccounts()
     {
         return $this->hasMany(SocialAccount::class);
     }
@@ -206,9 +207,11 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     }
 
     /**
-     * Returns a URL to the user's avatar
+     * Returns the user's avatar,
+     * @param int $size
+     * @return string
      */
-    public function getAvatar(int $size = 50): string
+    public function getAvatar($size = 50)
     {
         $default = url('/user_avatar.png');
         $imageId = $this->image_id;
@@ -226,8 +229,9 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     /**
      * Get the avatar for the user.
+     * @return BelongsTo
      */
-    public function avatar(): BelongsTo
+    public function avatar()
     {
         return $this->belongsTo(Image::class, 'image_id');
     }
@@ -267,13 +271,15 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
      */
     public function getProfileUrl(): string
     {
-        return url('/user/' . $this->slug);
+        return url('/user/' . $this->id);
     }
 
     /**
      * Get a shortened version of the user's name.
+     * @param int $chars
+     * @return string
      */
-    public function getShortName(int $chars = 8): string
+    public function getShortName($chars = 8)
     {
         if (mb_strlen($this->name) <= $chars) {
             return $this->name;
@@ -303,14 +309,5 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     public function logDescriptor(): string
     {
         return "({$this->id}) {$this->name}";
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function refreshSlug(): string
-    {
-        $this->slug = app(SlugGenerator::class)->generate($this);
-        return $this->slug;
     }
 }

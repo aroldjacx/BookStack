@@ -9,7 +9,7 @@ class HomepageTest extends TestCase
     {
         $this->asEditor();
         $homeVisit = $this->get('/');
-        $homeVisit->assertSee('My Recently Viewed');
+        $homeVisit->assertSee('Navigation');
         $homeVisit->assertSee('Recently Updated Pages');
         $homeVisit->assertSee('Recent Activity');
         $homeVisit->assertSee('home-default');

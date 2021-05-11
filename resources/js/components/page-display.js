@@ -12,7 +12,6 @@ class PageDisplay {
         Code.highlight();
         this.setupPointer();
         this.setupNavHighlighting();
-        this.setupDetailsCodeBlockRefresh();
 
         // Check the hash on load
         if (window.location.hash) {
@@ -196,16 +195,6 @@ class PageDisplay {
                 anchor.closest('li').classList.toggle('current-heading', shouldHighlight);
             });
         }
-    }
-
-    setupDetailsCodeBlockRefresh() {
-        const onToggle = event => {
-            const codeMirrors = [...event.target.querySelectorAll('.CodeMirror')];
-            codeMirrors.forEach(cm => cm.CodeMirror && cm.CodeMirror.refresh());
-        };
-
-        const details = [...this.elem.querySelectorAll('details')];
-        details.forEach(detail => detail.addEventListener('toggle', onToggle));
     }
 }
 

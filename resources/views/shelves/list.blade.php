@@ -19,7 +19,7 @@
                 @endforeach
             </div>
         @else
-            <div class="grid third">
+            <div class="grid half">
                 @foreach($shelves as $key => $shelf)
                     @include('partials.entity-grid-item', ['entity' => $shelf])
                 @endforeach

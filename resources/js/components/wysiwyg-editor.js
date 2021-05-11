@@ -212,7 +212,7 @@ function codePlugin() {
             showPopup(editor);
         });
 
-        function parseCodeMirrorInstances() {
+        editor.on('SetContent', function () {
 
             // Recover broken codemirror instances
             $('.CodeMirrorContainer').filter((index ,elem) => {
@@ -231,17 +231,6 @@ function codePlugin() {
                     Code.wysiwygView(elem);
                 });
             });
-        }
-
-        editor.on('init', function() {
-            // Parse code mirror instances on init, but delay a little so this runs after
-            // initial styles are fetched into the editor.
-            parseCodeMirrorInstances();
-            // Parsed code mirror blocks when content is set but wait before setting this handler
-            // to avoid any init 'SetContent' events.
-            setTimeout(() => {
-                editor.on('SetContent', parseCodeMirrorInstances);
-            }, 200);
         });
 
     });

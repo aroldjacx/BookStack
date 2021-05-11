@@ -78,6 +78,7 @@ return [
         'string'  => ':attribute debe ser al menos :min caracteres.',
         'array'   => ':attribute debe tener como mínimo :min items.',
     ],
+    'no_double_extension'  => 'El :attribute debe tener una única extensión de archivo.',
     'not_in'               => ':attribute seleccionado es inválido.',
     'not_regex'            => 'El formato de :attribute es inválido.',
     'numeric'              => ':attribute debe ser numérico.',
@@ -89,7 +90,7 @@ return [
     'required_without'     => ':attribute es requerido cuando no se encuentre entre los valores :values.',
     'required_without_all' => ':attribute es requerido cuando ninguno de los valores :values están presentes.',
     'same'                 => ':attribute y :other deben coincidir.',
-    'safe_url'             => 'El enlace provisto puede ser inseguro.',
+    'safe_url'             => 'El enlace proporcionado puede no ser seguro.',
     'size'                 => [
         'numeric' => ':attribute debe ser :size.',
         'file'    => ':attribute debe ser :size kilobytes.',

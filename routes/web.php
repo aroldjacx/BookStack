@@ -1,6 +1,5 @@
 <?php
 
-Route::get('/status', 'StatusController@show');
 Route::get('/robots.txt', 'HomeController@getRobots');
 
 // Authenticated routes...
@@ -99,7 +98,7 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     // User Profile routes
-    Route::get('/user/{slug}', 'UserProfileController@show');
+    Route::get('/user/{userId}', 'UserController@showProfilePage');
 
     // Image routes
     Route::get('/images/gallery', 'Images\GalleryImageController@list');
@@ -217,12 +216,12 @@ Route::group(['middleware' => 'auth'], function () {
 });
 
 // Social auth routes
-Route::get('/login/service/{socialDriver}', 'Auth\SocialController@login');
-Route::get('/login/service/{socialDriver}/callback', 'Auth\SocialController@callback');
+Route::get('/login/service/{socialDriver}', 'Auth\SocialController@getSocialLogin');
+Route::get('/login/service/{socialDriver}/callback', 'Auth\SocialController@socialCallback');
 Route::group(['middleware' => 'auth'], function () {
-    Route::get('/login/service/{socialDriver}/detach', 'Auth\SocialController@detach');
+    Route::get('/login/service/{socialDriver}/detach', 'Auth\SocialController@detachSocialAccount');
 });
-Route::get('/register/service/{socialDriver}', 'Auth\SocialController@register');
+Route::get('/register/service/{socialDriver}', 'Auth\SocialController@socialRegister');
 
 // Login/Logout routes
 Route::get('/login', 'Auth\LoginController@getLogin');

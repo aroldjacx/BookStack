@@ -46,14 +46,6 @@ class UserRepo
     }
 
     /**
-     * Get a user by their slug.
-     */
-    public function getBySlug(string $slug): User
-    {
-        return User::query()->where('slug', '=', $slug)->firstOrFail();
-    }
-
-    /**
      * Get all the users with their permissions.
      */
     public function getAllUsers(): Collection
@@ -167,13 +159,7 @@ class UserRepo
             'email_confirmed' => $emailConfirmed,
             'external_auth_id' => $data['external_auth_id'] ?? '',
         ];
-
-        $user = new User();
-        $user->forceFill($details);
-        $user->refreshSlug();
-        $user->save();
-
-        return $user;
+        return User::query()->forceCreate($details);
     }
 
     /**
