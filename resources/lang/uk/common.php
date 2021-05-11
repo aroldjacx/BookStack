@@ -33,7 +33,7 @@ return [
     'copy' => 'Копіювати',
     'reply' => 'Відповісти',
     'delete' => 'Видалити',
-    'delete_confirm' => 'Confirm Deletion',
+    'delete_confirm' => 'Підтвердити видалення',
     'search' => 'Шукати',
     'search_clear' => 'Очистити пошук',
     'reset' => 'Скинути',
@@ -77,4 +77,9 @@ return [
     // Email Content
     'email_action_help' => 'Якщо у вас виникають проблеми при натисканні кнопки ":actionText", скопіюйте та вставте URL у свій веб-браузер:',
     'email_rights' => 'Всі права захищені',
+
+    // Footer Link Options
+    // Not directly used but available for convenience to users.
+    'privacy_policy' => 'Privacy Policy',
+    'terms_of_service' => 'Terms of Service',
 ];

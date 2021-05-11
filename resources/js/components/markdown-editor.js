@@ -13,6 +13,7 @@ class MarkdownEditor {
 
         this.pageId = this.$opts.pageId;
         this.textDirection = this.$opts.textDirection;
+        this.imageUploadErrorText = this.$opts.imageUploadErrorText;
 
         this.markdown = new MarkdownIt({html: true});
         this.markdown.use(mdTasksLists, {label: true});
@@ -21,7 +22,6 @@ class MarkdownEditor {
 
         this.displayStylesLoaded = false;
         this.input = this.elem.querySelector('textarea');
-        this.htmlInput = this.elem.querySelector('input[name=html]');
         this.cm = code.markdownEditor(this.input);
 
         this.onMarkdownScroll = this.onMarkdownScroll.bind(this);
@@ -124,7 +124,6 @@ class MarkdownEditor {
         // Set body content
         this.displayDoc.body.className = 'page-content';
         this.displayDoc.body.innerHTML = html;
-        this.htmlInput.value = html;
 
         // Copy styles from page head and set custom styles for editor
         this.loadStylesIntoDisplay();
@@ -373,7 +372,7 @@ class MarkdownEditor {
                 const newContent = `[![${selectedText}](${resp.data.thumbs.display})](${resp.data.url})`;
                 replaceContent(placeHolderText, newContent);
             }).catch(err => {
-                window.$events.emit('error', trans('errors.image_upload_error'));
+                window.$events.emit('error', context.imageUploadErrorText);
                 replaceContent(placeHolderText, selectedText);
                 console.log(err);
             });
@@ -492,7 +491,7 @@ class MarkdownEditor {
                 this.cm.focus();
                 DrawIO.close();
             }).catch(err => {
-                window.$events.emit('error', trans('errors.image_upload_error'));
+                window.$events.emit('error', this.imageUploadErrorText);
                 console.log(err);
             });
         });

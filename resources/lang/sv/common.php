@@ -33,7 +33,7 @@ return [
     'copy' => 'Kopiera',
     'reply' => 'Svara',
     'delete' => 'Ta bort',
-    'delete_confirm' => 'Confirm Deletion',
+    'delete_confirm' => 'Bekräfta radering',
     'search' => 'Sök',
     'search_clear' => 'Rensa sökning',
     'reset' => 'Återställ',
@@ -67,8 +67,8 @@ return [
     'profile_menu' => 'Profilmeny',
     'view_profile' => 'Visa profil',
     'edit_profile' => 'Redigera profil',
-    'dark_mode' => 'Dark Mode',
-    'light_mode' => 'Light Mode',
+    'dark_mode' => 'Mörkt läge',
+    'light_mode' => 'Ljust Läge',
 
     // Layout tabs
     'tab_info' => 'Information',
@@ -77,4 +77,9 @@ return [
     // Email Content
     'email_action_help' => 'Om du har problem, klicka på knappen ":actionText", och kopiera och klistra in den här adressen i din webbläsare:',
     'email_rights' => 'Alla rättigheter är reserverade',
+
+    // Footer Link Options
+    // Not directly used but available for convenience to users.
+    'privacy_policy' => 'Privacy Policy',
+    'terms_of_service' => 'Terms of Service',
 ];

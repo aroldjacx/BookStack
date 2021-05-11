@@ -78,7 +78,6 @@ return [
         'string'  => ':attribute 至少為:min個字元。',
         'array'   => ':attribute 至少有:min項。',
     ],
-    'no_double_extension'  => 'The :attribute必須僅具有一個文件擴展名。',
     'not_in'               => '選中的 :attribute 無效。',
     'not_regex'            => 'The :attribute格式無效。',
     'numeric'              => ':attribute 必須是一個數。',
@@ -90,6 +89,7 @@ return [
     'required_without'     => '當:values不存在時，:attribute 字段是必需的。',
     'required_without_all' => '當:values均不存在時，:attribute 字段是必需的。',
     'same'                 => ':attribute 與 :other 必須匹配。',
+    'safe_url'             => 'The provided link may not be safe.',
     'size'                 => [
         'numeric' => ':attribute 必須為:size。',
         'file'    => ':attribute 必須為:size KB。',

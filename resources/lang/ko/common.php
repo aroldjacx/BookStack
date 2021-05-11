@@ -33,7 +33,7 @@ return [
     'copy' => '복사',
     'reply' => '답글',
     'delete' => '삭제',
-    'delete_confirm' => 'Confirm Deletion',
+    'delete_confirm' => '삭제 요청 확인',
     'search' => '검색',
     'search_clear' => '검색 지우기',
     'reset' => '리셋',
@@ -77,4 +77,9 @@ return [
     // Email Content
     'email_action_help' => ':actionText를 클릭할 수 없을 때는 웹 브라우저에서 다음 링크로 접속할 수 있습니다.',
     'email_rights' => '모든 권리 소유',
+
+    // Footer Link Options
+    // Not directly used but available for convenience to users.
+    'privacy_policy' => 'Privacy Policy',
+    'terms_of_service' => 'Terms of Service',
 ];
