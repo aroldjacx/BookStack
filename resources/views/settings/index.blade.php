@@ -95,6 +95,24 @@
 
                     <div class="grid half gap-xl">
                         <div>
+                            <label for="setting-app-main-navigation" class="setting-list-label">{{ trans('settings.app_main_navigation') }}</label>
+                            <p class="small">{{ trans('settings.app_main_navigation_desc') }}</p>
+                        </div>
+
+                        <div class="pt-xs">
+                            @include('components.toggle-switch', [
+                                'name' => 'setting-app-main-navigation',
+                                'value' => false,
+                                'label' => trans('settings.app_main_navigation_label'),
+                            ])
+                        </div>
+
+                        
+
+                    </div>
+
+                    <div class="grid half gap-xl">
+                        <div>
                             <label class="setting-list-label">{{ trans('settings.app_editor') }}</label>
                             <p class="small">{{ trans('settings.app_editor_desc') }}</p>
                         </div>
