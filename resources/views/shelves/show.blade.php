@@ -203,9 +203,9 @@
     </div>
 
 </div>
-                        <!--@foreach($shelf->visibleBooks as $key => $book)
+                        @foreach($shelf->visibleBooks as $key => $book)
                             @include('partials.entity-grid-item', ['entity' => $book])
-                        @endforeach -->
+                        @endforeach 
                     </div>
                 @endif
             @else
