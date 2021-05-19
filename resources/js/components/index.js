@@ -50,6 +50,7 @@ import toggleSwitch from "./toggle-switch.js"
 import triLayout from "./tri-layout.js"
 import userSelect from "./user-select.js"
 import wysiwygEditor from "./wysiwyg-editor.js"
+import customNavigation from "./custom-navigation.js"
 
 const componentMapping = {
     "add-remove-rows": addRemoveRows,
@@ -104,9 +105,11 @@ const componentMapping = {
     "tri-layout": triLayout,
     "user-select": userSelect,
     "wysiwyg-editor": wysiwygEditor,
+    "custom-navigation": customNavigation,
 };
 
 window.components = {};
+
 
 /**
  * Initialize components of the given name within the given element.

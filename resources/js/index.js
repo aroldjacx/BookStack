@@ -22,4 +22,4 @@ window.trans_plural = translator.parsePlural.bind(translator);
 
 // Load Components
 import components from "./components"
-components();
+components(); 

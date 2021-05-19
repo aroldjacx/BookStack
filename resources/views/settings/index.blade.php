@@ -107,8 +107,17 @@
                             ])
                         </div>
 
-                        
 
+
+                        <div id="component_test">
+                            <testcomponent></testcomponent>
+
+                            <span style="font-size:25px;"><b>@{{show}}</b></span>
+                            <h1 v-if="show">This is h1 tag</h1>
+
+                        </div>
+
+                        
                     </div>
 
                     <div class="grid half gap-xl">
