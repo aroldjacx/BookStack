@@ -110,7 +110,6 @@ const componentMapping = {
 
 window.components = {};
 
-
 /**
  * Initialize components of the given name within the given element.
  * @param {String} componentName
