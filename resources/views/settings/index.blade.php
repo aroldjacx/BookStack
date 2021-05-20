@@ -93,29 +93,30 @@
                         </div>
                     </div>
 
-                    <div id="component_test" class="grid half gap-xl">
+                    <div id="component_test"  class="grid half gap-xl">
 
                         <div>
                         <label for="setting-app-main-navigation" class="setting-list-label">{{ trans('settings.app_main_navigation') }}</label>
                             <p class="small">{{ trans('settings.app_main_navigation_desc') }}</p>
                             <hr>
                             <p v-if="show">@{{menu_name}}</p>
-                            <!--<testcomponent></testcomponent>-->
                             <input type="text" v-model="new_nested_item.text">
                             <span class="button btn-primary" @click="addRow()">Add to Menu</span>
                    
                         </div>
                         <div>
-                            <p>Menu structure</p>
+                            <p>Menu structure</p> 
+                           <!-- <testcomponentchild></testcomponentchild> -->
                             <Tree :value="nestableItems"></Tree>
-                            <input type="text" value="@{{nestableItems}}" name="setting-app-custom-navigation" id="setting-app-custom-navigation">
+                            <input type="text" v-model="JSON.stringify(nestableItems) " name="setting-app-custom-navigation" id="setting-app-custom-navigation">   
                         </div>
 
                         <div class="pt-xs">
-                            @{{nestableItems}}
+                           js -  @{{nestableItems}} <br>
+                           db -  {{ setting('app-custom-navigation') }}
                         </div>
 
-                        </div>
+                    </div>
                     <div class="grid half gap-xl">
                         <div>
                             <label class="setting-list-label">{{ trans('settings.app_editor') }}</label>

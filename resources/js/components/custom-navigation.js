@@ -1,11 +1,19 @@
 import Vue from '../services/vue.min.js';
 import 'he-tree-vue/dist/he-tree-vue.css'
 import {Tree, Draggable} from 'he-tree-vue'
+const axios = require('axios');
 
+Vue.component('testcomponentchild',{
+    created() {
 
-  Vue.component('testcomponent',{
-    template : '<div><h1>This is coming from component</h1></div>'
- }); 
+      },
+      data: function () {
+        return {
+          count: this.db_data
+        }
+      },
+    template : '<div>test<Tree :value="count"></Tree></div>'
+}); 
 
 var customNavigation = new Vue({
     el: '#component_test',
@@ -14,28 +22,30 @@ var customNavigation = new Vue({
         show: true,
         menu_name: "Add menu items",
         new_nested_item: { text:"" },
-        nestableItems: [
-            {text: 'Home'}
-        ]
-     },   
-     methods:{
-        addRow: function(){
-            this.nestableItems.push({
-                text: this.new_nested_item.text 
-            });
-        },
-        removeRow: function(row){
-          //console.log(row);
-          //this.items.$remove(row);
-        }, 
-       // submitRows: function() {
-       //     axios.post('/api/link/here', rows)
-       //      .then( (response) => {
-       //         console.log(response)
-       //       this.rows.push({name:"",job:""});
-       //     })
-       // }
-      }
+        nestableItems: []
+     },
+    created() {
+         this.getNavInfo();
+       },
+    methods:{
+      addRow: function(){
+          this.nestableItems.push({
+              text: this.new_nested_item.text 
+          });
+      },
+      removeRow: function(row){
+        //console.log(row);
+        //this.items.$remove(row);
+      }, 
+      getNavInfo() {
+         var test = axios.get('/settings/info')
+            .then( response => {
+              console.log( response.data);
+              this.nestableItems = response.data;
+          })
+      },
+
+    }
   });
 
 
