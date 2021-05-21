@@ -43823,24 +43823,18 @@
   // resources/js/components/custom-navigation.js
   const vue_min = __toModule(require_vue_min());
   const axios = require_axios2();
-  vue_min.default.component("testcomponentchild", {
-    created() {
-    },
-    data: function() {
-      return {
-        count: this.db_data
-      };
-    },
-    template: '<div>test<Tree :value="count"></Tree></div>'
+  vue_min.default.component("modal", {
+    template: "#modal-template"
   });
   var customNavigation = new vue_min.default({
-    el: "#component_test",
+    el: "#component_nav",
     components: {Tree: __vue_component__.mixPlugins([__vue_component__$1])},
     data: {
       show: true,
       menu_name: "Add menu items",
       new_nested_item: {text: ""},
-      nestableItems: []
+      nestableItems: [],
+      showModal: false
     },
     created() {
       this.getNavInfo();
@@ -43851,7 +43845,16 @@
           text: this.new_nested_item.text
         });
       },
-      removeRow: function(row) {
+      editRow: function(node, index3, path, tree) {
+        console.log(this.nestableItems);
+        console.log("node - " + node);
+        console.log("index - " + index3);
+        console.log("path - " + path);
+        console.log("tree - " + tree);
+      },
+      removeRow: function(e2) {
+        alert("removeRow" + e2);
+        console.log(e2);
       },
       getNavInfo() {
         var test = axios.get("/settings/info").then((response) => {

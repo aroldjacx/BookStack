@@ -93,28 +93,45 @@
                         </div>
                     </div>
 
-                    <div id="component_test"  class="grid half gap-xl">
-
+                    <div id="component_nav"  class="grid half gap-xl">
+ 
                         <div>
-                        <label for="setting-app-main-navigation" class="setting-list-label">{{ trans('settings.app_main_navigation') }}</label>
+                            <label for="setting-app-main-navigation" class="setting-list-label">{{ trans('settings.app_main_navigation') }}</label>
                             <p class="small">{{ trans('settings.app_main_navigation_desc') }}</p>
                             <hr>
-                            <p v-if="show">@{{menu_name}}</p>
+                            <span v-if="show">@{{menu_name}}</span>
                             <input type="text" v-model="new_nested_item.text">
                             <span class="button btn-primary" @click="addRow()">Add to Menu</span>
-                   
+
+                            <!-- use the modal component, pass in the prop -->
+                            <modal v-if="showModal" @close="showModal = false" style="margin-top:10px"></modal>
                         </div>
+                        
                         <div>
                             <p>Menu structure</p> 
                            <!-- <testcomponentchild></testcomponentchild> -->
-                            <Tree :value="nestableItems"></Tree>
+                            <Tree :value="nestableItems">
+                                <span slot-scope="{node, index, path, tree}">
+                                    
+                                    @{{node.text}}
+
+                                    <span class="button x-small btn-primary bg-warning float right" @click="removeRow(index)" >@icon('delete')</span>
+    
+
+                                    <span class="button x-small btn-primary float right" id="show-modal" @click="showModal = true" @click="editRow(node, index, path, tree )" style="margin-right: 5px;">@icon('edit')</span>
+
+                                </span>  
+                                              
+                            </Tree>
                             <input type="text" v-model="JSON.stringify(nestableItems) " name="setting-app-custom-navigation" id="setting-app-custom-navigation">   
                         </div>
 
+                        <!--
                         <div class="pt-xs">
                            js -  @{{nestableItems}} <br>
                            db -  {{ setting('app-custom-navigation') }}
-                        </div>
+                        </div> 
+                        -->
 
                     </div>
                     <div class="grid half gap-xl">
@@ -290,6 +307,38 @@
         </div>
 
     </div>
+
+
+<!-- template for the modal component -->
+<script type="text/x-template" id="modal-template">
+<transition name="modal">
+    <div class="modal-mask">
+    <div class="modal-wrapper">
+        <div class="modal-container">
+
+        <div class="modal-header">
+            <slot name="header">
+            Edit navigation menu
+            </slot>
+        </div>
+
+        <div class="modal-body">
+            <slot name="body">
+                <input type="text" >
+                <span class="button btn-primary" @click="$emit('save')">Save</span> 
+                <span  class="button btn-primary" @click="$emit('close')">Close</span>
+            </slot>
+        </div>
+
+        </div>
+    </div>
+    </div>
+</transition>
+</script>
+
+
+
+
 
     <style>
         /*
