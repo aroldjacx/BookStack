@@ -99,16 +99,22 @@
                             <label for="setting-app-main-navigation" class="setting-list-label">{{ trans('settings.app_main_navigation') }}</label>
                             <p class="small">{{ trans('settings.app_main_navigation_desc') }}</p>
                             <hr>
-                            <span v-if="show">@{{menu_name}}</span>
+
+                            <b>Add new navigation menu</b> <br>
+
+                            <span v-if="show">Link Text</span>
                             <input type="text" v-model="new_nested_item.text">
+                            <span v-if="show">URL</span>
+                            <input type="text" v-model="new_nested_item.url">
                             <span class="button btn-primary" @click="addRow()">Add to Menu</span>
 
                             <!-- use the modal component, pass in the prop -->
-                            <modal v-if="showModal" @close="showModal = false" style="margin-top:10px"></modal>
+                            <modal v-if="showModal" @close="showModal = false" v-on:updateTaskEdit="updateTaskEdit($event)" :initialdata="nav_node" style="margin-top: 10px;"></modal>
+  
                         </div>
                         
                         <div>
-                            <p>Menu structure</p> 
+                            <p><b>Menu structure</b></p> 
                            <!-- <testcomponentchild></testcomponentchild> -->
                             <Tree :value="nestableItems">
                                 <span slot-scope="{node, index, path, tree}">
@@ -118,7 +124,7 @@
                                     <span class="button x-small btn-primary bg-warning float right" @click="removeRow(index)" >@icon('delete')</span>
     
 
-                                    <span class="button x-small btn-primary float right" id="show-modal" @click="showModal = true" @click="editRow(node, index, path, tree )" style="margin-right: 5px;">@icon('edit')</span>
+                                    <span class="button x-small btn-primary float right" id="show-modal" @click="editRow(node, index, path, tree )" style="margin-right: 5px;">@icon('edit')</span>
 
                                 </span>  
                                               
@@ -313,35 +319,34 @@
 <script type="text/x-template" id="modal-template">
 <transition name="modal">
     <div class="modal-mask">
-    <div class="modal-wrapper">
-        <div class="modal-container">
+        <div class="modal-wrapper">
+            <div class="modal-container">
 
-        <div class="modal-header">
-            <slot name="header">
-            Edit navigation menu
-            </slot>
-        </div>
+            <div class="modal-header">
+                <slot name="header">
+                <b>Edit navigation menu</b> 
+                </slot>
+            </div>
 
-        <div class="modal-body">
-            <slot name="body">
-                <input type="text" >
-                <span class="button btn-primary" @click="$emit('save')">Save</span> 
-                <span  class="button btn-primary" @click="$emit('close')">Close</span>
-            </slot>
-        </div>
+            <div class="modal-body">
+                <slot name="body">
+                    <span>Link Text</span>
+                    <input type="text" v-model="initialdata.text" >
+                    <span>URL</span>
+                    <input type="text" v-model="initialdata.url" >
+                    <span  class="button btn-primary" @click="$emit('close')">Close</span>
+                    <small>Remember to save changes!</small>
+                </slot>
+            </div>
 
+            </div>
         </div>
-    </div>
     </div>
 </transition>
 </script>
 
-
-
-
-
-    <style>
-        /*
+<style>
+/*
 * Style for nestable
 */
 .he-tree .tree-node {
@@ -349,7 +354,61 @@
     margin-bottom: 5px;
     padding: 5px;
 }
-    </style>
+/**
+NOTE: Uncomment if you want the modal to appear as pop up window: . . .
+
+.modal-mask {
+  position: fixed;
+  z-index: 9998;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .5);
+  display: table;
+  transition: opacity .3s ease;
+}
+
+.modal-wrapper {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.modal-container {
+  width: 60%;
+  margin: 0px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
+  transition: all .3s ease;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.modal-header h3 {
+  margin-top: 0;
+  color: #42b983;
+}
+
+.modal-body {
+  margin: 20px 0;
+}
+
+.modal-default-button {
+  float: right;
+}
+
+.modal-enter, .modal-leave {
+  opacity: 0;
+}
+
+.modal-enter .modal-container,
+.modal-leave .modal-container {
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+**/
+</style>
 
     @include('components.entity-selector-popup', ['entityTypes' => 'page'])
 @stop

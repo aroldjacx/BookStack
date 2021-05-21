@@ -43824,15 +43824,30 @@
   const vue_min = __toModule(require_vue_min());
   const axios = require_axios2();
   vue_min.default.component("modal", {
+    props: {
+      initialdata: String
+    },
+    data() {
+      return {
+        date: ""
+      };
+    },
+    create() {
+    },
+    methods: {},
     template: "#modal-template"
   });
   var customNavigation = new vue_min.default({
     el: "#component_nav",
     components: {Tree: __vue_component__.mixPlugins([__vue_component__$1])},
     data: {
+      date: "",
       show: true,
-      menu_name: "Add menu items",
-      new_nested_item: {text: ""},
+      nav_node: "",
+      new_nested_item: {
+        text: "",
+        url: ""
+      },
       nestableItems: [],
       showModal: false
     },
@@ -43842,15 +43857,13 @@
     methods: {
       addRow: function() {
         this.nestableItems.push({
-          text: this.new_nested_item.text
+          text: this.new_nested_item.text,
+          url: this.new_nested_item.url
         });
       },
       editRow: function(node, index3, path, tree) {
-        console.log(this.nestableItems);
-        console.log("node - " + node);
-        console.log("index - " + index3);
-        console.log("path - " + path);
-        console.log("tree - " + tree);
+        this.nav_node = node;
+        this.showModal = true;
       },
       removeRow: function(e2) {
         alert("removeRow" + e2);
@@ -43861,6 +43874,10 @@
           console.log(response.data);
           this.nestableItems = response.data;
         });
+      },
+      updateTaskEdit($event) {
+        alert(8888888);
+        console.log($event);
       }
     }
   });

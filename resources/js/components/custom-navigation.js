@@ -4,6 +4,20 @@ import {Tree, Draggable} from 'he-tree-vue'
 const axios = require('axios');
 
 Vue.component("modal", {
+  props:{
+    initialdata:String
+  },
+  data() {
+    return {
+      date: '',
+    };
+  },
+  create(){
+   // console.log(this);
+  },
+  methods: {
+    //
+  },
   template: "#modal-template"
 });
 
@@ -16,9 +30,13 @@ var customNavigation = new Vue({
     el: '#component_nav',
     components: {Tree: Tree.mixPlugins([Draggable])},
     data: {
+        date: '',
         show: true,
-        menu_name: "Add menu items",
-        new_nested_item: { text:"" },
+        nav_node: '',
+        new_nested_item: { 
+          text:"", 
+          url:"" 
+        },
         nestableItems: [],
         showModal: false
      },
@@ -30,19 +48,14 @@ var customNavigation = new Vue({
       // Add new nav menu to row
       addRow: function(){
           this.nestableItems.push({
-              text: this.new_nested_item.text 
+              text: this.new_nested_item.text,
+              url: this.new_nested_item.url 
           });
       },
       // Edit nav row
       editRow: function(node, index, path, tree){
-
-        console.log(this.nestableItems);
-        console.log("node - " + node);
-        console.log("index - " + index);
-        console.log("path - " + path);
-        console.log("tree - " + tree);
-        //alert('edit' + e);
-        //
+        this.nav_node = node;
+        this.showModal = true;
       }, 
       // Remove nav row
       removeRow: function(e){
@@ -59,6 +72,10 @@ var customNavigation = new Vue({
               this.nestableItems = response.data;
           })
       },
+      updateTaskEdit($event) {
+        alert(8888888)
+        console.log($event);
+      }
     }
   });
 
