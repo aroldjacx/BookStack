@@ -22,7 +22,7 @@ Vue.component("modal", {
 });
 
 /**
- * Liberias:
+ * Main Liberias:
  * For nav menu https://he-tree-vue.phphe.com/
 */
 
@@ -66,7 +66,7 @@ var customNavigation = new Vue({
       }, 
       // Get nav information from database
       getNavInfo() {
-         var test = axios.get('/settings/info')
+         var test = axios.get('/settings/info_custom_navigation')
             .then( response => {
               console.log( response.data);
               this.nestableItems = response.data;

@@ -75,7 +75,7 @@ class SettingController extends Controller
         return redirect(rtrim($redirectLocation, '#'));
     }
 
-    public function info(){
+    public function info_custom_navigation(){
         $settings = \BookStack\Settings\Setting::all();
 
         foreach ($settings as $value) {

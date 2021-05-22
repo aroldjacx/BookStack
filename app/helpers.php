@@ -169,3 +169,77 @@ function sortUrl(string $path, array $data, array $overrideData = []): string
 
     return url($path . '?' . implode('&', $queryStringSections));
 }
+
+
+/**
+ * Build the HTML for the custom sidebar navigation
+ * HTML will be location here, however, you can update the styling
+ * via CSS.
+ */
+ function customSidbarNavigationForBlade(): string
+ {
+    // Query collection
+    $settings = \BookStack\Settings\Setting::all();
+    $html = '';
+
+    // loop through settings, to get the navigation custom data
+    foreach ($settings as $value) {
+        if (setting('app-custom-navigation')){
+            $json = setting('app-custom-navigation');
+            $objNav = json_decode($json);
+        }
+    }
+    // return html <ul> list back to laraval blade.
+    return navBuildParentChildList($objNav);
+ }
+
+/**
+ * The navBuildParentChildList will build the HTML UL list
+ * it will loop back itself and look for children elements.
+ */
+function navBuildParentChildList($objNav)
+{
+    //init 
+    $arrayNav = (array) $objNav; // typecase object to array
+    $html = '';
+    
+    // start UL html tag
+    $html .= '<ul id="nav-list-wrapper">';
+
+    // start loop to 
+    for ($i=0; $i < COUNT($arrayNav); $i++) 
+    { 
+        //dd($arrayNav[$i]);
+
+        $text = isset($arrayNav[$i]->text) ? $arrayNav[$i]->text : 'n/a';
+        $url = isset($arrayNav[$i]->url) ? $arrayNav[$i]->url : '#';
+
+        // append to $html string to build html/ul list
+        // note the open tag <li> starts here, beceause we need to include chile list side
+        $html .= "<li><a href='". $url."'>". $text ;
+
+        // check the index of the array to see if child array exist
+        if (array_key_exists('children', $arrayNav[$i]))
+        {  
+            // forloop to itrate over children array
+            for ($i2=0; $i2 < COUNT($arrayNav[$i]->children); $i2++) 
+            {  
+                // Loop back on itself to if children exist in index
+                // not closing </li> tag. we have sub ul list
+               $html .=   navBuildParentChildList($arrayNav[$i]->children). "</a></li>";
+               break;
+             
+            }//endloop
+        }
+        //else{
+            //dd($arrayNav[$i]);
+      //      $html .=   $arrayNav[$i]->text . "</a></li>";
+       //     break;
+      //  }
+    }//endloop
+
+    // end UL html tag
+    $html .= '</ul>';
+
+    return $html;
+}

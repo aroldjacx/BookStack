@@ -163,7 +163,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::group(['prefix' => 'settings'], function() {
         Route::get('/', 'SettingController@index')->name('settings');
         Route::post('/', 'SettingController@update');
-        Route::get('/info', 'SettingController@info')->name('info');
+        Route::get('/info_custom_navigation', 'SettingController@info_custom_navigation')->name('info_custom_navigation');
 
         // Maintenance
         Route::get('/maintenance', 'MaintenanceController@index');

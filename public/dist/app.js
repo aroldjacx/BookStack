@@ -43870,7 +43870,7 @@
         console.log(e2);
       },
       getNavInfo() {
-        var test = axios.get("/settings/info").then((response) => {
+        var test = axios.get("/settings/info_custom_navigation").then((response) => {
           console.log(response.data);
           this.nestableItems = response.data;
         });
