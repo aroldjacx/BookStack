@@ -43865,19 +43865,15 @@
         this.nav_node = node;
         this.showModal = true;
       },
-      removeRow: function(e2) {
-        alert("removeRow" + e2);
-        console.log(e2);
+      removeRow: function(node, index3, path, tree) {
+        tree.removeNodeByPath(path);
+        console.log(node);
       },
       getNavInfo() {
         var test = axios.get("/settings/info_custom_navigation").then((response) => {
           console.log(response.data);
           this.nestableItems = response.data;
         });
-      },
-      updateTaskEdit($event) {
-        alert(8888888);
-        console.log($event);
       }
     }
   });

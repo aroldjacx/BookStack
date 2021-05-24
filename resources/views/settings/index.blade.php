@@ -121,7 +121,7 @@
                                     
                                     @{{node.text}}
 
-                                    <span class="button x-small btn-primary bg-warning float right" @click="removeRow(index)" >@icon('delete')</span>
+                                    <span class="button x-small btn-primary bg-warning float right" @click="removeRow(node, index, path, tree)" >@icon('delete')</span>
     
 
                                     <span class="button x-small btn-primary float right" id="show-modal" @click="editRow(node, index, path, tree )" style="margin-right: 5px;">@icon('edit')</span>

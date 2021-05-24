@@ -58,11 +58,9 @@ var customNavigation = new Vue({
         this.showModal = true;
       }, 
       // Remove nav row
-      removeRow: function(e){
-        alert('removeRow' + e);
-        console.log(e);
-        //console.log(row);
-        //this.items.$remove(row);
+      removeRow: function(node, index, path, tree){
+        tree.removeNodeByPath(path)
+        console.log(node);
       }, 
       // Get nav information from database
       getNavInfo() {
@@ -71,10 +69,6 @@ var customNavigation = new Vue({
               console.log( response.data);
               this.nestableItems = response.data;
           })
-      },
-      updateTaskEdit($event) {
-        alert(8888888)
-        console.log($event);
       }
     }
   });
