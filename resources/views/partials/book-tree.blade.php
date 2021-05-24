@@ -2,6 +2,10 @@
 <div class="mb-xl">
     <h5>{{ trans('entities.pages_navigation_top') }}</h5>
 
+    {!!  customSidbarNavigationForBlade() !!}
+
+    <hr>
+
         <ul class="mcd-menu">
             <li>
                 <a href=""><strong>Who We Are</strong></a>
@@ -42,8 +46,18 @@
         </ul>
 </div>
 
+<style>
+ul#nav-list-wrapper:first-of-type  > li {
+    color: red;
+    font-weight: bold;
+}
 
+ul#nav-list-wrapper:not(:first-of-type) > li {
+    background-color: #900;
+    font-weight: 100;
+}
 
+</style>
 
 <nav id="book-tree"
      class="book-tree mb-xl"

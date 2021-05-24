@@ -75,6 +75,12 @@ button {
   padding: $-xs*1.2 $-s;
 }
 
+.button.x-small {
+  padding: 0px 0px 0px 5px;
+  margin: 0px;
+}
+
+
 .text-button {
   cursor: pointer;
   background-color: transparent;

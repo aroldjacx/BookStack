@@ -1163,6 +1163,10 @@ html.dark-mode .text-dark {
   background-color: #FFFFFF;
 }
 
+.bg-warning {
+  background-color: #b84444 !important;
+}
+
 .bg-book {
   background-color: var(--color-book);
 }
@@ -2003,6 +2007,11 @@ html.dark-mode .button.outline:hover, html.dark-mode .button.outline:focus, html
 .button.small {
   font-size: 0.75rem;
   padding: 7.2px 12px;
+}
+
+.button.x-small {
+  padding: 0px 0px 0px 5px;
+  margin: 0px;
 }
 
 .text-button {
