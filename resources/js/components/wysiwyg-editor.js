@@ -448,7 +448,7 @@ class WysiwygEditor {
 
     getToolBar() {
         const textDirPlugins = this.textDirection === 'rtl' ? 'ltr rtl' : '';
-        return `undo redo | styleselect | bold italic underline strikethrough superscript subscript | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | table image-insert link hr drawio media | removeformat code ${textDirPlugins} fullscreen`
+        return `undo redo | styleselect | bold italic underline strikethrough superscript subscript | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | table image-insert image-insert2 accordion link hr drawio media | removeformat code ${textDirPlugins} fullscreen`
     }
 
     getTinyMceConfig() {
@@ -708,6 +708,35 @@ class WysiwygEditor {
                             html += '</a>';
                             editor.execCommand('mceInsertContent', false, html);
                         }, 'gallery');
+                    }
+                });
+
+                // Custom accordion button
+                editor.addButton('accordion', {
+                    text: 'Accordion',
+                    icon: false, // add css icon if you want...
+                    onclick: function onclick() {
+                    editor.windowManager.open({
+                        title: 'Add Accordion',
+                        body: {
+                        type: 'textbox',
+                        name: 'my_textbox',
+                        layout: 'flow',
+                        label: 'Enter the # of accordions:'
+                        },
+                        onsubmit: function onsubmit(e) {
+                        var accordionSet = [];
+                        var curAccordion = Date.now();
+                        var accordionCount = parseInt(e.data.my_textbox);
+                        for (var i = 0; i < accordionCount; i++) {
+                            var panel = '<div> <input id="bkmrk-ac-' + (curAccordion + i) + '" name="accordion-1" type="radio"> <label for="bkmrk-ac-' + (curAccordion + i) + '">Text goes here</label> <article class="ac-large"><p>yi byv the way they mandated by local, state, or federal regulationsyulkykut567564 show that show to the people who make shows, and on the strength of that one show they decide if theyre going to make more shows.</p> </article></div>';
+                            accordionSet.push(panel);
+                        }
+                
+                        var accordion = '\n <section id="bkmrk-accordion" class="ac-container">\n ' + accordionSet.join('') + '\n  </section> <br>';
+                        editor.insertContent(accordion);
+                        }
+                    });
                     }
                 });
 
