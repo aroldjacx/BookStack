@@ -725,16 +725,20 @@ class WysiwygEditor {
                         label: 'Enter the # of accordions:'
                         },
                         onsubmit: function onsubmit(e) {
-                        var accordionSet = [];
-                        var curAccordion = Date.now();
-                        var accordionCount = parseInt(e.data.my_textbox);
-                        for (var i = 0; i < accordionCount; i++) {
-                            var panel = '<div> <input id="bkmrk-ac-' + (curAccordion + i) + '" name="accordion-1" type="radio"> <label for="bkmrk-ac-' + (curAccordion + i) + '">Text goes here</label> <article class="ac-large"><p>yi byv the way they mandated by local, state, or federal regulationsyulkykut567564 show that show to the people who make shows, and on the strength of that one show they decide if theyre going to make more shows.</p> </article></div>';
-                            accordionSet.push(panel);
-                        }
-                
-                        var accordion = '\n <section id="bkmrk-accordion" class="ac-container">\n ' + accordionSet.join('') + '\n  </section> <br>';
-                        editor.insertContent(accordion);
+                            // init varibles
+                            var accordionSet = [];
+                            var curAccordion = Date.now();
+                            var accordionCount = parseInt(e.data.my_textbox);
+
+                            // loop: once number is entered on the number of accordions, then loop count.
+                            for (var i = 0; i < accordionCount; i++) {
+                                var panel = '<div> <input id="bkmrk-ac-' + (curAccordion + i) + '" name="accordion-1" type="radio"> <label for="bkmrk-ac-' + (curAccordion + i) + '">Text goes here</label> <article class="ac-large"><p>yi byv the way they mandated by local, state, or federal regulationsyulkykut567564 show that show to the people who make shows, and on the strength of that one show they decide if theyre going to make more shows.</p> </article></div>';
+                                accordionSet.push(panel);
+                            }//end loop
+                            
+                            // wrapper section, we place the loop items inside the <section> tag
+                            var accordion = '\n <section id="bkmrk-accordion" class="ac-container">\n ' + accordionSet.join('') + '\n  </section> <br>';
+                            editor.insertContent(accordion);
                         }
                     });
                     }
