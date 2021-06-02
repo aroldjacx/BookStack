@@ -7,11 +7,12 @@
 
 <div class="mb-xl">
     <h5>{{ trans('entities.' . ($signedIn ? 'my_recently_viewed' : 'books_recent')) }}</h5>
-    <!--@include('partials.entity-list', [
+    
+    @include('partials.entity-list', [
         'entities' => $recents,
         'style' => 'compact',
         'emptyText' => $signedIn ? trans('entities.no_pages_viewed') : trans('entities.books_empty')
-        ]) -->
+        ])
 
         <ul class="mcd-menu">
             <li>
@@ -66,7 +67,7 @@
 </a>            </div>       
 </div>
 
-<!--div class="mb-xl">
+<div class="mb-xl">
     <h5><a class="no-color" href="{{ url("/pages/recently-updated") }}">{{ trans('entities.recently_updated_pages') }}</a></h5>
     <div id="recently-updated-pages">
         @include('partials.entity-list', [
@@ -80,4 +81,4 @@
 <div id="recent-activity" class="mb-xl">
     <h5>{{ trans('entities.recent_activity') }}</h5>
     @include('partials.activity-list', ['activity' => $activity])
-</div-->
+</div>
