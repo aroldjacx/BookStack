@@ -14,6 +14,9 @@ return [
     // App Settings
     'app_customization' => 'Customization',
     'app_features_security' => 'Features & Security',
+    'app_main_navigation' => 'Custom Main Navigation',
+    'app_main_navigation_desc' => 'This is a sidebar navigation, if used, it will override the default auto-populated navigation.',
+    'app_main_navigation_label' => 'Activate & make primary navigation',
     'app_name' => 'Application Name',
     'app_name_desc' => 'This name is shown in the header and in any system-sent emails.',
     'app_name_header' => 'Show name in header',
