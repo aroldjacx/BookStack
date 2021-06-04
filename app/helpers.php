@@ -219,7 +219,7 @@ function navBuildParentChildList($objNav)
         $html .= "<li><a href='". $url."'>". $text ;
 
         // check the index of the array to see if child array exist
-        if (key_exists('children', $arrayNav[$i]))
+        if (property_exists($arrayNav[$i], 'children'))
         {  
             // forloop to itrate over children array
             for ($i2=0; $i2 < COUNT($arrayNav[$i]->children); $i2++) 
