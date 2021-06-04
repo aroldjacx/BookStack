@@ -4,46 +4,6 @@
 
     {!!  customSidbarNavigationForBlade() !!}
 
-    <hr>
-
-        <ul class="mcd-menu">
-            <li>
-                <a href=""><strong>Who We Are</strong></a>
-                <ul class="mcd-menu-sub">
-                   <li><a href="">Team Directory</a></li> 
-                   <li><a href="">International</a></li> 
-                </ul>
-            </li>
-            <li>
-                <a href=""><strong>People & Talent</strong></a>
-                <ul class="mcd-menu-sub">
-                   <li><a href="">Team Directory</a></li> 
-                   <li><a href="">International</a></li> 
-                </ul>
-            </li>
-            <li>
-                <a href=""><strong>How We Do It</strong></a>
-            </li>
-            <li>
-                <a href=""><strong>Product Team</strong></a>
-                <ul class="mcd-menu-sub">
-                   <li><a href="">Team Directory</a></li> 
-                   <li><a href="">International</a></li> 
-                </ul>
-            </li>
-             <li>
-                <a href=""><strong>What We Do</strong></a>
-            </li>
-            <li>
-                <a href=""><strong>Who Do I Ask?</strong></a>
-                <ul class="mcd-menu-sub">
-                   <li><a href="">Team Directory</a></li> 
-                </ul>
-            </li>
-            <li>
-                <a href=""><strong>Propeller Style Guide</strong></a>
-            </li>
-        </ul>
 </div>
 
 <style>
