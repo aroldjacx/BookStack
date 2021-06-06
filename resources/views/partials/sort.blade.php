@@ -1,5 +1,5 @@
 <?php
-    $selectedSort = (isset($sort) && property_exists($sort, $options)) ? $sort : array_keys($options)[0];
+    $selectedSort = (isset($sort) && property_exists((object) $options, $sort)) ? $sort : array_keys($options)[0];
     $order = (isset($order) && in_array($order, ['asc', 'desc'])) ? $order : 'asc';
 ?>
 <div class="list-sort-container" list-sort-control>

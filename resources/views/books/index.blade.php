@@ -5,6 +5,10 @@
 @stop
 
 @section('left')
+
+    {!!  customSidbarNavigationForBlade() !!}
+
+    <!-- Disable the default menu, remove comment if needed.
     @if($recents)
         <div id="recents" class="mb-xl">
             <h5>{{ trans('entities.recently_viewed') }}</h5>
@@ -29,6 +33,7 @@
             <div class="body text-muted">{{ trans('entities.books_new_empty') }}</div>
         @endif
     </div>
+    -->
 @stop
 
 @section('right')
