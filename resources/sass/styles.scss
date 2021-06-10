@@ -399,3 +399,17 @@ table.table .table-entity-item {
   padding-top: 0px !important;
   margin: 0px !important;
 }
+
+.main-ac-a-r{
+  width: 220px;
+  height: 300px;
+  border: 1px solid black; 
+  display: flex;
+  align-items: center;
+}
+
+.ac-a-r{
+  padding: 5px;
+  background-color: #ec8300;
+  cursor: pointer;
+}

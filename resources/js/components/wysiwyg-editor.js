@@ -410,6 +410,13 @@ function listenForBookStackEditorEvents(editor) {
     window.$events.listen('editor::focus', () => {
         editor.focus();
     });
+
+    const divs = document.querySelectorAll('span.ac-a-r');
+
+    divs.forEach(el => el.addEventListener('click', event => {
+      console.log(event);
+    }));
+
 }
 
 class WysiwygEditor {
@@ -585,6 +592,13 @@ class WysiwygEditor {
                 });
 
                 function editorChange() {
+                    const divs = editor.getBody().querySelectorAll('.ac-a-r');
+                    
+                    divs.forEach(el => el.addEventListener('click', event => {
+                        console.log(event);
+                        event.path[2].remove()
+                    }));
+
                     const content = editor.getContent();
                     if (context.isDarkMode) {
                         editor.contentDocument.documentElement.classList.add('dark-mode');
@@ -719,10 +733,10 @@ class WysiwygEditor {
                     editor.windowManager.open({
                         title: 'Add Accordion',
                         body: {
-                        type: 'textbox',
-                        name: 'my_textbox',
-                        layout: 'flow',
-                        label: 'Enter the # of accordions:'
+                            type: 'textbox',
+                            name: 'my_textbox',
+                            layout: 'flow',
+                            label: 'Enter the # of accordions:'
                         },
                         onsubmit: function onsubmit(e) {
                             // init varibles
@@ -732,9 +746,9 @@ class WysiwygEditor {
 
                             // loop: once number is entered on the number of accordions, then loop count.
                             for (var i = 0; i < accordionCount; i++) {
-                                var panel = '<div> <input id="bkmrk-ac-' + (curAccordion + i) + '" name="accordion-1" type="radio"> <label for="bkmrk-ac-' + (curAccordion + i) + '">Text goes here</label> <article class="ac-large"><p>yi byv the way they mandated by local, state, or federal regulationsyulkykut567564 show that show to the people who make shows, and on the strength of that one show they decide if theyre going to make more shows.</p> </article></div>';
+                                var panel = '<div> <input id="bkmrk-ac-' + (curAccordion + i) + '" name="accordion-1" type="radio"> <label for="bkmrk-ac-' + (curAccordion + i) + '">Text goes here</label> <article class="ac-large"><p>yi byv the way they mandated by local, state, or federal regulationsyulkykut567564 show that show to the people who make shows, and on the strength of that one show they decide if theyre going to make more shows.</p> </article> <div class="bkmrk-main-ac-a-r"><span id="ac-Remove-'+ i +'" class="ac-a-r" onclick="removeAccordion()"> ' + i + ' - Remove</span> </div></div>';
                                 accordionSet.push(panel);
-                            }//end loop
+                            }//end loop 
                             
                             // wrapper section, we place the loop items inside the <section> tag
                             var accordion = '\n <section id="bkmrk-accordion" class="ac-container">\n ' + accordionSet.join('') + '\n  </section> <br>';
