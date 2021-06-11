@@ -455,7 +455,8 @@ class WysiwygEditor {
 
     getToolBar() {
         const textDirPlugins = this.textDirection === 'rtl' ? 'ltr rtl' : '';
-        return `undo redo | styleselect | bold italic underline strikethrough superscript subscript | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | table image-insert image-insert2 accordion link hr drawio media | removeformat code ${textDirPlugins} fullscreen`
+        return `undo redo | styleselect | bold italic underline strikethrough superscript subscript | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | table image-insert image-insert2 accordion manageAccordion link hr drawio media | removeformat code ${textDirPlugins} fullscreen`
+
     }
 
     getTinyMceConfig() {
@@ -750,13 +751,60 @@ class WysiwygEditor {
                                 accordionSet.push(panel);
                             }//end loop 
                             
-                            // wrapper section, we place the loop items inside the <section> tag
-                            var accordion = '\n <section id="bkmrk-accordion" class="ac-container">\n ' + accordionSet.join('') + '\n  </section> <br>';
-                            editor.insertContent(accordion);
+                            if(editor.contentDocument.all[9].id == 'bkmrk-accordion'){
+                                editor.contentDocument.all[9].innerHTML += accordionSet.join('')
+                            }else{
+                                // wrapper section, we place the loop items inside the <section> tag
+                                var accordion = '\n <section id="bkmrk-accordion" class="ac-container">\n ' + accordionSet.join('') + '\n  </section> <br>';
+                                editor.insertContent(accordion);                            
+                            }
                         }
                     });
                     }
                 });
+
+                // Manage accordion 
+                editor.addButton('manageAccordion', {
+                    text: 'Manage Accordion(s)',
+                    icon: false, // add css icon if you want...
+                    onclick: function onclick() {
+                    editor.windowManager.open({
+                        title: 'Manage Accordion(s)',
+                        body: {
+                            type   : 'container',
+                            html   : getAccData(),
+                            minWidth: 560,
+                            minHeight: 460,
+                        },
+                        onsubmit: function onsubmit(e) {
+                            // init varibles
+                            var accordionSet = [];
+                            var curAccordion = Date.now();
+                            var accordionCount = parseInt(e.data.my_textbox);
+
+                            // loop: once number is entered on the number of accordions, then loop count.
+                            for (var i = 0; i < accordionCount; i++) {
+                                var panel = '<div style="position:relative"><input id="bkmrk-ac-' + (curAccordion + i) + '" name="accordion-1" type="radio"> <label for="bkmrk-ac-' + (curAccordion + i) + '">Text goes here</label> <article class="ac-large"><p>yi byv the way they mandated by local, state, or federal regulationsyulkykut567564 show that show to the people who make shows, and on the strength of that one show they decide if theyre going to make more shows.</p> </article> <div class="bkmrk-main-ac-a-r"><span id="ac-Remove-'+ i +'" class="ac-a-r" onclick="removeAccordion()"> ' + i + ' - Remove</span> </div></div>';
+                                accordionSet.push(panel);
+                            }//end loop 
+                            
+                            if(editor.contentDocument.all[9].id == 'bkmrk-accordion'){
+                                document.getElementById('bkmrk-accordion').innerHTML += '\n ' + accordionSet.join('') + '\n ';
+                            }else{
+                                // wrapper section, we place the loop items inside the <section> tag
+                                var accordion = '\n <section id="bkmrk-accordion" class="ac-container">\n ' + accordionSet.join('') + '\n  </section> <br>';
+                                editor.insertContent(accordion);                            
+                            }
+                        }
+                    });
+                    }
+                });
+
+                function getAccData() {
+                    console.log(this)
+                    //return editor.contentDocument.all[9];
+                    return editor.startContent;
+                }
 
                 // Paste image-uploads
                 editor.on('paste', event => editorPaste(event, editor, context));
