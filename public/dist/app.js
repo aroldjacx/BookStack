@@ -44106,7 +44106,7 @@
   window.components.first = (name) => (window.components[name] || [null])[0];
   var components_default = initAll;
 
-  // resources/js/index.js
+  // ../../../../../Users/timjordan/sites/bookstack/resources/js/index.js
   window.baseUrl = function(path) {
     let basePath = document.querySelector('meta[name="base-url"]').getAttribute("content");
     if (basePath[basePath.length - 1] === "/")
