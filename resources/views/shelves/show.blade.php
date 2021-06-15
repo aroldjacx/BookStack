@@ -8,7 +8,7 @@
         ]])
     </div>
 
-    <main class="card content-wrap">
+    <main class="card content-wrap ajax">
         <h1 class="break-text">{{$shelf->name}}</h1>
         <div class="book-content">
             <p class="text-muted">{!! nl2br(e($shelf->description)) !!}</p>
@@ -20,7 +20,7 @@
                         @endforeach
                     </div>
                 @else
-                    <div class="grid third book-card">
+                    <div class="grid fourth book-card">
                         @foreach($shelf->visibleBooks as $key => $book)
                             @include('partials.entity-grid-item', ['entity' => $book])
                         @endforeach 
