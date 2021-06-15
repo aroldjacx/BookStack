@@ -8,7 +8,7 @@
         ]])
     </div>
 
-    <main class="card content-wrap">
+    <main class="card content-wrap ajax">
         <h1 class="break-text">{{$shelf->name}}</h1>
         <div class="book-content">
             <p class="text-muted">{!! nl2br(e($shelf->description)) !!}</p>
@@ -20,189 +20,7 @@
                         @endforeach
                     </div>
                 @else
-                    <div class="grid third book-card">
-
-<div class="grid-card">
-    <div class="featured-image-container-wrap">
-        <h2 class="text-limit-lines-2">New Hires</h2>
-
-    </div>
-    <div class="grid-card-content">
-        <section class="ac-container">
-                <div>
-                    <input id="ac-1" name="accordion-1" type="radio" />
-                    <label for="ac-1">About us</label>
-                    <article class="ac-small">
-                        <ul>
-                            <li><a href="#">Birthay</a></li>
-                            <li><a href="#">Monday</a></li>
-                            <li><a href="#">Seventh</a></li>
-                            <li><a href="#">Seventh</a></li>
-
-                        </ul>
-                    </article>
-                </div>
-                <div>
-                    <input id="ac-2" name="accordion-1" type="radio" />
-                    <label for="ac-2">How we work</label>
-                    <article class="ac-small">
-                         <ul>
-                            <li><a href="#">Birthay</a></li>
-                            <li><a href="#">Monday</a></li>
-                            <li><a href="#">Seventh</a></li>
-                        </ul>
-                    </article>
-                </div>
-                <div>
-                    <input id="ac-3" name="accordion-1" type="radio" />
-                    <label for="ac-3">References</label>
-                    <article class="ac-small">
-                        <ul>
-                            <li><a href="#">Birthay</a></li>
-                            <li><a href="#">Monday</a></li>
-                            <li><a href="#">Seventh</a></li>
-                            <li><a href="#">Seventh</a></li>
-                        </ul>
-                    </article>
-                </div>
-                <div>
-                    <input id="ac-4" name="accordion-1" type="radio" />
-                    <label for="ac-4">Contact us</label>
-                    <article class="ac-small">
-                         <ul>
-                            <li><a href="#">Birthay</a></li>
-                            <li><a href="#">Monday</a></li>
-                            <li><a href="#">Seventh</a></li>
-                            <li><a href="#">Seventh</a></li>
-                        </ul>
-                    </article>
-                </div>
-            </section>
-    </div>
-
-</div>
-
-<div class="grid-card">
-    <div class="featured-image-container-wrap">
-        <h2 class="text-limit-lines-2">Personal</h2>
-
-    </div>
-    <div class="grid-card-content">
-        <section class="ac-container">
-                <div>
-                    <input id="ac-5" name="accordion-2" type="radio" checked />
-                    <label for="ac-5">Leaves of Absence</label>
-                    <article class="ac-medium">
-                        <ul>
-                            <li><a href="http://bookstack.localhost/books/personal/page/leave-of-absence">Birthay Parents</a></li>
-                            <li><a href="#">Payroll</a></li>
-                            <li><a href="#">PTO</a></li>
-                            <li><a href="#">Sequoia</a></li>
-                            <li><a href="#">Clint Perks</a></li>
-                            <li><a href="#">Work from Home</a></li>
-                            <li><a href="#">Life Event</a></li>
-                        </ul>
-                    </article>
-                </div>
-                <div>
-                    <input id="ac-6" name="accordion-2" type="radio" />
-                    <label for="ac-6">How we work</label>
-                    <article class="ac-small">
-                         <ul>
-                            <li><a href="#">Birthay</a></li>
-                            <li><a href="#">Monday</a></li>
-                            <li><a href="#">Seventh</a></li>
-                        </ul>
-                    </article>
-                </div>
-                <div>
-                    <input id="ac-7" name="accordion-2" type="radio" />
-                    <label for="ac-7">References</label>
-                    <article class="ac-small">
-                        <ul>
-                            <li><a href="#">Birthay</a></li>
-                            <li><a href="#">Monday</a></li>
-                            <li><a href="#">Seventh</a></li>
-                            <li><a href="#">Seventh</a></li>
-                        </ul>
-                    </article>
-                </div>
-                <div>
-                    <input id="ac-8" name="accordion-2" type="radio" />
-                    <label for="ac-8">Contact us</label>
-                    <article class="ac-small">
-                         <ul>
-                            <li><a href="#">Birthay</a></li>
-                            <li><a href="#">Monday</a></li>
-                            <li><a href="#">Seventh</a></li>
-                            <li><a href="#">Seventh</a></li>
-                        </ul>
-                    </article>
-                </div>
-            </section>
-    </div>
-
-</div>
-
-<div class="grid-card">
-    <div class="featured-image-container-wrap">
-        <h2 class="text-limit-lines-2">Proessional</h2>
-
-    </div>
-    <div class="grid-card-content">
-        <section class="ac-container">
-                <div>
-                    <input id="ac-9" name="accordion-3" type="radio" />
-                    <label for="ac-9">About us</label>
-                    <article class="ac-small">
-                        <ul>
-                            <li><a href="#">Birthay</a></li>
-                            <li><a href="#">Monday</a></li>
-                            <li><a href="#">Seventh</a></li>
-                            <li><a href="#">Seventh</a></li>
-
-                        </ul>
-                    </article>
-                </div>
-                <div>
-                    <input id="ac-10" name="accordion-3" type="radio" />
-                    <label for="ac-10">How we work</label>
-                    <article class="ac-small">
-                         <ul>
-                            <li><a href="#">Birthay</a></li>
-                            <li><a href="#">Monday</a></li>
-                            <li><a href="#">Seventh</a></li>
-                        </ul>
-                    </article>
-                </div>
-                <div>
-                    <input id="ac-11" name="accordion-3" type="radio" />
-                    <label for="ac-11">References</label>
-                    <article class="ac-small">
-                        <ul>
-                            <li><a href="#">Birthay</a></li>
-                            <li><a href="#">Monday</a></li>
-                            <li><a href="#">Seventh</a></li>
-                            <li><a href="#">Seventh</a></li>
-                        </ul>
-                    </article>
-                </div>
-                <div>
-                    <input id="ac-12" name="accordion-3" type="radio" />
-                    <label for="ac-12">Contact us</label>
-                    <article class="ac-small">
-                         <ul>
-                            <li><a href="#">Birthay</a></li>
-                            <li><a href="#">Monday</a></li>
-                            <li><a href="#">Seventh</a></li>
-                            <li><a href="#">Seventh</a></li>
-                        </ul>
-                    </article>
-                </div>
-            </section>
-    </div>
-
-</div>
+                    <div class="grid fourth book-card">
                         @foreach($shelf->visibleBooks as $key => $book)
                             @include('partials.entity-grid-item', ['entity' => $book])
                         @endforeach 
@@ -232,6 +50,8 @@
     </main>
 
 @stop
+
+
 
 @section('left')
 
@@ -268,6 +88,45 @@
 
 @section('right')
     <div class="actions mb-xl">
+ <h5>{{ trans('common.actions') }}</h5>
+<div class="icon-list text-primary">
+
+            @if(userCan('book-create-all') && userCan('bookshelf-update', $shelf))
+                <a href="{{ $shelf->getUrl('/create-book') }}" class="icon-list-item">
+                    <span class="icon">@icon('add')</span>
+                    <span>{{ trans('entities.books_new_action') }}</span>
+                </a>
+            @endif
+
+            @include('partials.view-toggle', ['view' => $view, 'type' => 'shelf'])
+
+            <hr class="primary-background">
+
+            @if(userCan('bookshelf-update', $shelf))
+                <a href="{{ $shelf->getUrl('/edit') }}" class="icon-list-item">
+                    <span>@icon('edit')</span>
+                    <span>{{ trans('common.edit') }}</span>
+                </a>
+            @endif
+
+            @if(userCan('restrictions-manage', $shelf))
+                <a href="{{ $shelf->getUrl('/permissions') }}" class="icon-list-item">
+                    <span>@icon('lock')</span>
+                    <span>{{ trans('entities.permissions') }}</span>
+                </a>
+            @endif
+
+            @if(userCan('bookshelf-delete', $shelf))
+                <a href="{{ $shelf->getUrl('/delete') }}" class="icon-list-item">
+                    <span>@icon('delete')</span>
+                    <span>{{ trans('common.delete') }}</span>
+                </a>
+            @endif
+
+        </div>
+
+
+
         <h5>{{ trans('common.resource') }}</h5>
 
 

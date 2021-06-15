@@ -79,7 +79,39 @@ color: #fff;
 
 
 
+@media screen and (min-width: 1401px){
+.tri-layout-container {
+    display: grid;
+    margin-inline-start: 0; 
+    margin-inline-end: 32px;
+    grid-template-columns: 240px 5fr 1fr;
+    grid-template-areas: "a b c";
+    grid-column-gap: 38px;
+}
+}
 
+div.tri-layout-left#sidebar {
+    background: #2f2f2f;
+}
+div.tri-layout-left#sidebar a, div.tri-layout-left#sidebar a h4 {
+    color: #ffffff;
+}
+div.tri-layout-left#sidebar ul a{
+font-family: 'Source Sans Pro', sans-serif;
+font-weight: 300;
+}
+@media screen and (min-width: 1000px){
+    .tri-layout-left-contents > *, .tri-layout-right-contents > * {
+        opacity: 1;
+    }
+}
+
+@media screen and (min-width: 1400px){
+    .tri-layout-middle-contents {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+}
 
 
 #bkmrk-propeller-submenu a{
