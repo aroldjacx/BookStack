@@ -189,6 +189,7 @@ function sortUrl(string $path, array $data, array $overrideData = []): string
             $objNav = json_decode($json);
         }
     }
+    $objNav = [];
     // return html <ul> list back to laraval blade.
     return navBuildParentChildList($objNav);
  }
@@ -199,16 +200,16 @@ function sortUrl(string $path, array $data, array $overrideData = []): string
  */
 function navBuildParentChildList($objNav)
 {
-    //init 
+    //init
     $arrayNav = (array) $objNav; // typecase object to array
     $html = '';
-    
+
     // start UL html tag
     $html .= '<ul id="nav-list-wrapper">';
 
-    // start loop to 
-    for ($i=0; $i < COUNT($arrayNav); $i++) 
-    { 
+    // start loop to
+    for ($i=0; $i < COUNT($arrayNav); $i++)
+    {
         //dd($arrayNav[$i]);
 
         $text = isset($arrayNav[$i]->text) ? $arrayNav[$i]->text : 'n/a';
@@ -220,15 +221,15 @@ function navBuildParentChildList($objNav)
 
         // check the index of the array to see if child array exist
         if (property_exists((object) $arrayNav[$i],'children'))
-        {  
+        {
             // forloop to itrate over children array
-            for ($i2=0; $i2 < COUNT($arrayNav[$i]->children); $i2++) 
-            {  
+            for ($i2=0; $i2 < COUNT($arrayNav[$i]->children); $i2++)
+            {
                 // Loop back on itself to if children exist in index
                 // not closing </li> tag. we have sub ul list
                $html .=   navBuildParentChildList($arrayNav[$i]->children). "</a></li>";
                break;
-             
+
             }//endloop
         }
         //else{

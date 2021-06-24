@@ -14,7 +14,7 @@
             <p class="text-muted">{!! nl2br(e($shelf->description)) !!}</p>
             @if(count($shelf->visibleBooks) > 0)
                 @if($view === 'list')
-                    <div class="entity-list">
+                    <div class="grid third">
                         @foreach($shelf->visibleBooks as $book)
                             @include('books.list-item', ['book' => $book])
                         @endforeach
@@ -23,7 +23,7 @@
                     <div class="grid fourth book-card">
                         @foreach($shelf->visibleBooks as $key => $book)
                             @include('partials.entity-grid-item', ['entity' => $book])
-                        @endforeach 
+                        @endforeach
                     </div>
                 @endif
             @else
@@ -80,7 +80,7 @@
         </div>
         </div>
         </a>
-        </div>       
+        </div>
 </div>
 
 
