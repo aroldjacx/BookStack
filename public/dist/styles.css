@@ -1210,9 +1210,6 @@ html.dark-mode .text-dark {
 .grid.third {
   grid-template-columns: 1fr 1fr 1fr;
 }
-.grid.fourth {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
 .grid.left-focus {
   grid-template-columns: 2fr 1fr;
 }
@@ -1248,9 +1245,7 @@ html.dark-mode .text-dark {
   .grid.third:not(.no-break) {
     grid-template-columns: 1fr 1fr;
   }
-  .grid.fourth:not(.no-break) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+
   .grid.half:not(.no-break), .grid.left-focus:not(.no-break), .grid.right-focus:not(.no-break) {
     grid-template-columns: 1fr;
   }
@@ -1275,9 +1270,6 @@ html.dark-mode .text-dark {
 @media screen and (max-width: 600px) {
   .grid.third:not(.no-break) {
     grid-template-columns: 1fr;
-  }
-.grid.fourth:not(.no-break) {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 }
 @media screen and (max-width: 400px) {
@@ -6313,6 +6305,10 @@ table.table .table-entity-item {
   padding: 5px;
   background-color: #ec8300;
   cursor: pointer;
+}
+
+.tri-layout .ac-a-r {
+  display: none;
 }
 
 /*# sourceMappingURL=styles.css.map */
