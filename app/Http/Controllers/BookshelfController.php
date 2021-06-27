@@ -2,6 +2,9 @@
 
 use Activity;
 use BookStack\Entities\Models\Book;
+use BookStack\Entities\Repos\BookRepo;
+use BookStack\Entities\Repos\ChapterRepo;
+use BookStack\Entities\Tools\BookContents;
 use BookStack\Entities\Tools\PermissionsUpdater;
 use BookStack\Entities\Tools\ShelfContext;
 use BookStack\Entities\Repos\BookshelfRepo;
@@ -19,12 +22,16 @@ class BookshelfController extends Controller
     protected $bookshelfRepo;
     protected $entityContextManager;
     protected $imageRepo;
+    protected $bookRepo;
+    protected $chapterRepo;
 
-    public function __construct(BookshelfRepo $bookshelfRepo, ShelfContext $entityContextManager, ImageRepo $imageRepo)
+    public function __construct(BookshelfRepo $bookshelfRepo, ShelfContext $entityContextManager, ImageRepo $imageRepo, BookRepo $bookRepo, ChapterRepo $chapterRepo)
     {
         $this->bookshelfRepo = $bookshelfRepo;
         $this->entityContextManager = $entityContextManager;
         $this->imageRepo = $imageRepo;
+        $this->bookRepo = $bookRepo;
+        $this->chapterRepo = $chapterRepo;
     }
 
     /**
@@ -40,16 +47,24 @@ class BookshelfController extends Controller
             'created_at' => trans('common.sort_created_at'),
             'updated_at' => trans('common.sort_updated_at'),
         ];
-
         $shelves = $this->bookshelfRepo->getAllPaginated(18, $sort, $order);
+        foreach($shelves as $index => $shelf){
+            foreach($shelf->visibleBooks as $book) {
+                $getBook = $this->bookRepo->getBySlug($book->slug);
+                $bookChildren[$book->name] = (new BookContents($getBook))->getTree(true);
+            }
+        }
+        //echo "<pre>";print_r($booksChapter);
         $recents = $this->isSignedIn() ? $this->bookshelfRepo->getRecentlyViewed(4) : false;
         $popular = $this->bookshelfRepo->getPopular(4);
         $new = $this->bookshelfRepo->getRecentlyCreated(4);
 
         $this->entityContextManager->clearShelfContext();
         $this->setPageTitle(trans('entities.shelves'));
+
         return view('shelves.index', [
             'shelves' => $shelves,
+            'bookChildren' => $bookChildren,
             'recents' => $recents,
             'popular' => $popular,
             'new' => $new,
@@ -104,10 +119,16 @@ class BookshelfController extends Controller
         Views::add($shelf);
         $this->entityContextManager->setShelfContext($shelf->id);
         $view = setting()->getForCurrentUser('bookshelf_view_type', config('app.views.books'));
-
+        //echo "<pre>";print_r($view);
         $this->setPageTitle($shelf->getShortName());
+
+        foreach($shelf->visibleBooks as $book) {
+            $getBook = $this->bookRepo->getBySlug($book->slug);
+            $bookChildren[$book->name] = (new BookContents($getBook))->getTree(true);
+        }
         return view('shelves.show', [
             'shelf' => $shelf,
+            'bookChildren' => $bookChildren,
             'view' => $view,
             'activity' => Activity::entityActivity($shelf, 20, 1)
         ]);
