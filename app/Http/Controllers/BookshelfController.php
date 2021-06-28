@@ -121,13 +121,14 @@ class BookshelfController extends Controller
         $view = setting()->getForCurrentUser('bookshelf_view_type', config('app.views.books'));
         $this->setPageTitle($shelf->getShortName());
         $bookChildren=[];
-        
+
         foreach($shelf->visibleBooks as $book) {
             $getBook = $this->bookRepo->getBySlug($book->slug);
             $bookChildren[$book->name] = (new BookContents($getBook))->getTree(true);
         }
         return view('shelves.show', [
             'shelf' => $shelf,
+            'bookChildren' => $bookChildren,
             //'bookChildren' => isset($bookChildren) ? $bookChildren : null,
             'view' => $view,
             'activity' => Activity::entityActivity($shelf, 20, 1)
