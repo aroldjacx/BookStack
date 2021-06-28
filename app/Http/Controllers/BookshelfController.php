@@ -129,7 +129,6 @@ class BookshelfController extends Controller
         return view('shelves.show', [
             'shelf' => $shelf,
             'bookChildren' => $bookChildren,
-            //'bookChildren' => isset($bookChildren) ? $bookChildren : null,
             'view' => $view,
             'activity' => Activity::entityActivity($shelf, 20, 1)
         ]);
